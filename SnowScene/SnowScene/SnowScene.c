@@ -9,10 +9,10 @@
 #include <freeglut.h>
 #include <math.h>
 #include <stdio.h>
- /******************************************************************************
-  * Animation & Timing Setup
-  ******************************************************************************/
-  // Target frame rate (number of Frames Per Second).
+/******************************************************************************
+* Animation & Timing Setup
+******************************************************************************/
+// Target frame rate (number of Frames Per Second).
 #define TARGET_FPS 60
 // Ideal time each frame should be displayed for (in milliseconds).
 const unsigned int FRAME_TIME = 1000 / TARGET_FPS;
@@ -27,8 +27,8 @@ unsigned int frameStartTime = 0;
 /******************************************************************************
  * Keyboard Input Handling Setup
  ******************************************************************************/
- // Define all character keys used for input (add any new key definitions here).
- // Note: USE ONLY LOWERCASE CHARACTERS HERE. The keyboard handler provided 
+// Define all character keys used for input (add any new key definitions here).
+// Note: USE ONLY LOWERCASE CHARACTERS HERE. The keyboard handler provided 
 // converts all
 // characters typed by the user to lowercase, so the SHIFT key is ignored.
 #define KEY_EXIT 27 // Escape key.
@@ -48,6 +48,30 @@ void think(void);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
+#define MAX_PARTICLES = 1000
+
+typedef struct {
+	float x;
+	float y;
+} Vec2f;
+
+typedef struct {
+	float x;
+	float y;
+	float z;
+} Vec3f;
+
+typedef struct {
+	Vec2f position;
+	float velocity;
+	float size;
+	int isActive;
+	Vec3f color;
+	float transparency;
+} Particle_t;
+
+Particle_t particleSystem[3];
+
  /******************************************************************************
   * Entry Point (don't put anything except the main function here)
   ******************************************************************************/
@@ -55,7 +79,7 @@ void main(int argc, char **argv)
 {
 	// Initialize the OpenGL window.
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(1000, 800);
 	glutInitWindowPosition(300, 100);
 	glutCreateWindow("Animation");
@@ -73,6 +97,7 @@ void main(int argc, char **argv)
 	// after we call glutMainLoop).
 	frameStartTime = (unsigned int)glutGet(GLUT_ELAPSED_TIME);
 	// Enter the main drawing loop (this will never return).
+
 	glutMainLoop();
 }
 /******************************************************************************
@@ -87,6 +112,18 @@ simulated
  */
 void display(void)
 {
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glPointSize(100.f);
+	glBegin(GL_POINTS);
+	{
+		glColor4f(1, 1, 1, 1);
+		glVertex2f(0.0, 1.0);
+		glVertex2f(0.0, 0.0);
+	}
+	glEnd();
+
+	glutSwapBuffers();
 	/*
 	TEMPLATE: REPLACE THIS COMMENT WITH YOUR DRAWING CODE
 	Separate reusable pieces of drawing code into functions, which you can
@@ -117,6 +154,13 @@ void keyPressed(unsigned char key, int x, int y)
 		definition in the "Keyboard Input Handling Setup" section of this
 		file.
 		*/
+	case 's':
+		break;
+
+	case 'q':
+		exit(0);
+		break;
+
 	case KEY_EXIT:
 		exit(0);
 		break;
@@ -157,6 +201,12 @@ void idle(void)
  */
 void init(void)
 {
+	glClearColor(0.0, 0.0, 0.0, 1.0); //make the clear color black and opaque
+	glColor3f(1.0, 1.0, 1.0); //set the drawing color to be white
+	//set up oour drawing area usinf default values
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 }
 /*
 Advance our animation by FRAME_TIME milliseconds.
