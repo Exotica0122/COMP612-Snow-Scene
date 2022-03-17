@@ -64,13 +64,13 @@ typedef struct {
 typedef struct {
 	Vec2f position;
 	float velocity;
-	float size;
+	int size;
 	int isActive;
 	Vec3f color;
 	float transparency;
 } Particle_t;
 
-Particle_t particleSystem[3];
+Particle_t particleSystem[5];
 
  /******************************************************************************
   * Entry Point (don't put anything except the main function here)
@@ -199,14 +199,51 @@ void idle(void)
  /*
  Initialise OpenGL and set up our scene before we begin the render loop.
  */
+
+float RandomFloat(float a, float b) {
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = b - a;
+	float r = random * diff;
+	return a + r;
+}
+
 void init(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0); //make the clear color black and opaque
 	glColor3f(1.0, 1.0, 1.0); //set the drawing color to be white
-	//set up oour drawing area usinf default values
+	//set up our drawing area usinf default values
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+
+	for (int i = 0; i < sizeof(particleSystem); i++)
+	{
+		Vec2f startPosition;
+		startPosition.x = RandomFloat(-1, 1);
+		startPosition.y = 1.0f;
+
+		Vec3f snowColor;
+		// Red
+		snowColor.x = 0.f;
+		// Green
+		snowColor.y = 0.f;
+		// Blue
+		snowColor.z = 1.f;
+
+
+		Particle_t snow = 
+		{
+			.position = startPosition
+		};
+
+		particleSystem[i] = snow;
+
+		particleSystem[i].size = 4;
+		particleSystem[i].velocity = 2.f;
+		particleSystem[i].isActive = 1;
+		particleSystem[i].color = snowColor;
+		particleSystem[i].transparency = 1.f;
+	}
 }
 /*
 Advance our animation by FRAME_TIME milliseconds.
@@ -217,6 +254,15 @@ in init().
 */
 void think(void)
 {
+	for (int i = 0; i < sizeof(particleSystem); i++)
+	{
+
+		//particleSystem[i].position.y += particleSystem[i].velocity;
+		//if (particleSystem[i].position.y < 1)
+		//{
+		//	particleSystem[i].isActive = 0;
+		//}
+	}
 	/*
 	TEMPLATE: REPLACE THIS COMMENT WITH YOUR ANIMATION/SIMULATION CODE
 	In this function, we update all the variables that control the animated

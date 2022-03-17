@@ -1,0 +1,4 @@
+﻿  test.c
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\testing\test.c(3): warning C4013: 'printf' undefined; assuming extern returning int
+test.obj : error LNK2019: unresolved external symbol _printf referenced in function _main
+C:\Users\ykx5915\Documents\GitHub\COMP612-Snow-Scene\SnowScene\Debug\Testing.exe : fatal error LNK1120: 1 unresolved externals
