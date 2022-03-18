@@ -51,6 +51,8 @@ void think(void);
  ******************************************************************************/
 #define MAX_PARTICLES = 1000
 
+int frameCount = 0;
+
 typedef struct {
 	float x;
 	float y;
@@ -71,8 +73,20 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
-Particle_t particleSystem[5];
+Particle_t particleSystem[1000];
 int currentSnowPosition = 0;
+int activeParticle = 0;
+int isParticlesOn = 0;
+
+// This returns a random float between two values 
+// Start and End are both inclusive
+// [a, b]
+float RandomFloat(float a, float b) {
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = b - a;
+	float r = random * diff;
+	return a + r;
+}
 
  /******************************************************************************
   * Entry Point (don't put anything except the main function here)
@@ -114,18 +128,11 @@ simulated
  */
 void display(void)
 {
+	frameCount++;
+
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	//glPointSize(100.f);
-	//glBegin(GL_POINTS);
-	//{
-	//	glColor4f(1, 1, 1, 1);
-	//	glVertex2f(0.0, 1.0);
-	//	glVertex2f(0.0, 0.0);
-	//}
-	//glEnd();
 
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
@@ -174,6 +181,8 @@ void keyPressed(unsigned char key, int x, int y)
 		file.
 		*/
 	case 's':
+		if (isParticlesOn == 0) isParticlesOn = 1;
+		else isParticlesOn = 0;
 		break;
 
 	case 'q':
@@ -219,13 +228,6 @@ void idle(void)
  Initialise OpenGL and set up our scene before we begin the render loop.
  */
 
-float RandomFloat(float a, float b) {
-	float random = ((float)rand()) / (float)RAND_MAX;
-	float diff = b - a;
-	float r = random * diff;
-	return a + r;
-}
-
 void init(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0); //make the clear color black and opaque
@@ -235,26 +237,31 @@ void init(void)
 	glLoadIdentity();
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 
-	particleSystem[0].size = 10;
-
+	// Initialize all particles before rendering the first frame
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
+		// Position
 		Vec2f startPosition;
 		startPosition.x = RandomFloat(-1.f, 1.f);
 		startPosition.y = 1.f;
 
+		// Color
 		Vec3f snowColor;
 		// Red
 		snowColor.x = 0.678f;
 		// Green
 		snowColor.y = 0.847f;
 		// Blue
-		snowColor.z = 0.902f;
+		snowColor.z = 1.f;
 
+		// Size (Affects Gravity)
+		int size = RandomFloat(3.f, 10.f);
+
+		// Initialize rest of the values
 		particleSystem[i].position = startPosition;
-		particleSystem[i].velocity = 0.005f;
-		particleSystem[i].size = RandomFloat(1.f, 10.f);
-		particleSystem[i].isActive = 1;
+		particleSystem[i].velocity = size / 1000.f;
+		particleSystem[i].size = size;
+		particleSystem[i].isActive = 0;
 		particleSystem[i].color = snowColor;
 		particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
 	}
@@ -270,71 +277,51 @@ in init().
 
 void think(void)
 {
+	// Spawn 10 particles every 10 frame
+	if (frameCount % 10 == 0 && isParticlesOn == 1)
+	{
+		for (unsigned int i = 0; i < 10; i++) {
+			// Set it to be active
+			particleSystem[currentSnowPosition].isActive = 1;
+
+			activeParticle++;
+			currentSnowPosition++;
+
+			// Back to 0 when reached last element of array
+			if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
+		}
+	}
 
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
+		// Velocity of the snow particle
 		if (particleSystem[i].isActive == 1)
 		{
 			particleSystem[i].position.y -= particleSystem[i].velocity;
+
+			// Wind effect
+			particleSystem[i].position.x += particleSystem[i].velocity / 50.f;
+
+			// Gradually decrease transparency when below -0.75 y axis
+			if (particleSystem[i].position.y < -0.75f)
+			{
+				particleSystem[i].transparency -= 0.05f;
+			}
 		}
 
-		if (particleSystem[i].position.y < -0.9f)
+		// Reached maximum x or y level of particle destroy
+		if (particleSystem[i].position.y < -0.9f || particleSystem[i].position.x == 1)
 		{
 			particleSystem[i].isActive = 0;
+			activeParticle--;
 
 			Vec2f newStartPosition;
 			newStartPosition.x = RandomFloat(-1.f, 1.f);
 			newStartPosition.y = 1.f;
 
 			particleSystem[i].position = newStartPosition;
+			particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
 		}
 	}
-
-
-	/*
-	TEMPLATE: REPLACE THIS COMMENT WITH YOUR ANIMATION/SIMULATION CODE
-	In this function, we update all the variables that control the animated
-	parts of our simulated world. For example: if you have a moving box,
-	this is
-	where you update its coordinates to make it move. If you have something
-	that
-	spins around, here's where you update its angle.
-	NOTHING CAN BE DRAWN IN HERE: you can only update the variables that
-	control
-	how everything will be drawn later in display().
-	How much do we move or rotate things? Because we use a fixed frame
-	rate, we
-	assume there's always FRAME_TIME milliseconds between drawing each
-	frame. So,
-	every time think() is called, we need to work out how far things should
-	have
-	moved, rotated, or otherwise changed in that period of time.
-	Movement example:
-	* Let's assume a distance of 1.0 GL units is 1 metre.
-	* Let's assume we want something to move 2 metres per second on the x
-	axis
-	* Each frame, we'd need to update its position like this:
-	x += 2 * (FRAME_TIME / 1000.0f)
-	* Note that we have to convert FRAME_TIME to seconds. We can skip this
-	by
-	  using a constant defined earlier in this template:
-	x += 2 * FRAME_TIME_SEC;
-	Rotation example:
-	* Let's assume we want something to do one complete 360-degree rotation
-	every
-	  second (i.e. 60 Revolutions Per Minute, or RPM).
-	* Each frame, we'd need to update our object's angle like this (we'll
-	use the
-	  FRAME_TIME_SEC constant as per the example above):
-	a += 360 * FRAME_TIME_SEC;
-	This works for any type of "per second" change: just multiply the
-	amount you'd
-	want to move in a full second by FRAME_TIME_SEC, and add or subtract
-	that
-	from whatever variable you're updating.
-	You can use this same approach to animate other things like color,
-	opacity,
-	brightness of lights, etc.
-	*/
 }
 /******************************************************************************/
