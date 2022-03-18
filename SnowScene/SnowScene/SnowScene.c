@@ -9,6 +9,7 @@
 #include <freeglut.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 /******************************************************************************
 * Animation & Timing Setup
 ******************************************************************************/
@@ -71,6 +72,7 @@ typedef struct {
 } Particle_t;
 
 Particle_t particleSystem[5];
+int currentSnowPosition = 0;
 
  /******************************************************************************
   * Entry Point (don't put anything except the main function here)
@@ -79,7 +81,7 @@ void main(int argc, char **argv)
 {
 	// Initialize the OpenGL window.
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(1000, 800);
 	glutInitWindowPosition(300, 100);
 	glutCreateWindow("Animation");
@@ -113,15 +115,32 @@ simulated
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glPointSize(100.f);
-	glBegin(GL_POINTS);
+	//glPointSize(100.f);
+	//glBegin(GL_POINTS);
+	//{
+	//	glColor4f(1, 1, 1, 1);
+	//	glVertex2f(0.0, 1.0);
+	//	glVertex2f(0.0, 0.0);
+	//}
+	//glEnd();
+
+	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
-		glColor4f(1, 1, 1, 1);
-		glVertex2f(0.0, 1.0);
-		glVertex2f(0.0, 0.0);
+		Particle_t currentSnow = particleSystem[i];
+		if (currentSnow.isActive == 1)
+		{
+			glPointSize(currentSnow.size);
+			glBegin(GL_POINTS);
+			{
+				glColor4f(currentSnow.color.x, currentSnow.color.y, currentSnow.color.z, currentSnow.transparency);
+				glVertex2f(currentSnow.position.x, currentSnow.position.y);
+			}
+			glEnd();
+		}
 	}
-	glEnd();
 
 	glutSwapBuffers();
 	/*
@@ -216,33 +235,28 @@ void init(void)
 	glLoadIdentity();
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 
-	for (int i = 0; i < sizeof(particleSystem); i++)
+	particleSystem[0].size = 10;
+
+	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
 		Vec2f startPosition;
-		startPosition.x = RandomFloat(-1, 1);
-		startPosition.y = 1.0f;
+		startPosition.x = RandomFloat(-1.f, 1.f);
+		startPosition.y = 1.f;
 
 		Vec3f snowColor;
 		// Red
-		snowColor.x = 0.f;
+		snowColor.x = 0.678f;
 		// Green
-		snowColor.y = 0.f;
+		snowColor.y = 0.847f;
 		// Blue
-		snowColor.z = 1.f;
+		snowColor.z = 0.902f;
 
-
-		Particle_t snow = 
-		{
-			.position = startPosition
-		};
-
-		particleSystem[i] = snow;
-
-		particleSystem[i].size = 4;
-		particleSystem[i].velocity = 2.f;
+		particleSystem[i].position = startPosition;
+		particleSystem[i].velocity = 0.005f;
+		particleSystem[i].size = RandomFloat(1.f, 10.f);
 		particleSystem[i].isActive = 1;
 		particleSystem[i].color = snowColor;
-		particleSystem[i].transparency = 1.f;
+		particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
 	}
 }
 /*
@@ -252,17 +266,31 @@ frame is drawn, EXCEPT the very first frame drawn after our application
 starts. Any setup required before the first frame is drawn should be placed
 in init().
 */
+
+
 void think(void)
 {
-	for (int i = 0; i < sizeof(particleSystem); i++)
-	{
 
-		//particleSystem[i].position.y += particleSystem[i].velocity;
-		//if (particleSystem[i].position.y < 1)
-		//{
-		//	particleSystem[i].isActive = 0;
-		//}
+	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	{
+		if (particleSystem[i].isActive == 1)
+		{
+			particleSystem[i].position.y -= particleSystem[i].velocity;
+		}
+
+		if (particleSystem[i].position.y < -0.9f)
+		{
+			particleSystem[i].isActive = 0;
+
+			Vec2f newStartPosition;
+			newStartPosition.x = RandomFloat(-1.f, 1.f);
+			newStartPosition.y = 1.f;
+
+			particleSystem[i].position = newStartPosition;
+		}
 	}
+
+
 	/*
 	TEMPLATE: REPLACE THIS COMMENT WITH YOUR ANIMATION/SIMULATION CODE
 	In this function, we update all the variables that control the animated
