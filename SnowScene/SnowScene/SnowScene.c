@@ -9,7 +9,6 @@
 #include <freeglut.h>
 #include <math.h>
 #include <stdio.h>
-#include <time.h>
 /******************************************************************************
 * Animation & Timing Setup
 ******************************************************************************/
@@ -148,6 +147,10 @@ void display(void)
 			glEnd();
 		}
 	}
+
+	glColor3f(1.0, 1.0, 1.0);
+	glRasterPos2f(-1.f, 0.95f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, "Diagnostics:");
 
 	glutSwapBuffers();
 	/*
