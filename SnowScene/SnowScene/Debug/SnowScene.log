@@ -1,6 +1,3 @@
-﻿  SnowScene.c
-c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(141): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
-c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(261): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-  SnowScene.vcxproj -> C:\Users\ykx5915\Documents\GitHub\COMP612-Snow-Scene\SnowScene\Debug\SnowScene.exe
-  C:\Users\ykx5915\Documents\GitHub\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
+﻿  SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\Debug\SnowScene.exe
+  C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
   1 File(s) copied

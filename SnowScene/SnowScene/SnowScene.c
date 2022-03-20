@@ -5,6 +5,8 @@
  * This template provides a basic FPS-limited render loop for an animated scene.
  *
  ******************************************************************************/
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Windows.h>
 #include <freeglut.h>
 #include <math.h>
@@ -48,6 +50,7 @@ void think(void);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
+
 #define MAX_PARTICLES = 1000
 
 int frameCount = 0;
@@ -72,10 +75,19 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
+typedef struct {
+	Particle_t particle;
+	int length;
+	int start;
+	int end;
+};
+
 Particle_t particleSystem[1000];
 int currentSnowPosition = 0;
 int activeParticle = 0;
 int isParticlesOn = 0;
+int isWindOn = 0;
+int isShakeOn = 0;
 
 // This returns a random float between two values 
 // Start and End are both inclusive
@@ -133,6 +145,7 @@ void display(void)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// Draw snows behind snowman
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
 		Particle_t currentSnow = particleSystem[i];
@@ -148,9 +161,35 @@ void display(void)
 		}
 	}
 
+	// Draw snows infront of snowman
+	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	{
+		Particle_t currentSnow = particleSystem[i];
+		if (currentSnow.isActive == 2)
+		{
+			glPointSize(currentSnow.size);
+			glBegin(GL_POINTS);
+			{
+				glColor4f(currentSnow.color.x, currentSnow.color.y, currentSnow.color.z, currentSnow.transparency);
+				glVertex2f(currentSnow.position.x, currentSnow.position.y);
+			}
+			glEnd();
+		}
+	}
+
 	glColor3f(1.0, 1.0, 1.0);
 	glRasterPos2f(-1.f, 0.95f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, "Diagnostics:");
+
+	char particleString[40] = "particles: ";
+	char activeParticleString[4];
+	_itoa(activeParticle, activeParticleString, 10);
+	strcat(particleString, activeParticleString);
+
+
+	glColor3f(1.0, 1.0, 1.0);
+	glRasterPos2f(-1.f, 0.90f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 
 	glutSwapBuffers();
 	/*
@@ -186,6 +225,17 @@ void keyPressed(unsigned char key, int x, int y)
 	case 's':
 		if (isParticlesOn == 0) isParticlesOn = 1;
 		else isParticlesOn = 0;
+		break;
+
+	case 'd':
+		if (isWindOn == 0) isWindOn = 1;
+		else if (isWindOn == 1) isWindOn = 2;
+		else isWindOn = 0;
+		break;
+
+	case 'a':
+		if (isShakeOn == 0) isShakeOn = 1;
+		else isShakeOn = 0;
 		break;
 
 	case 'q':
@@ -262,7 +312,7 @@ void init(void)
 
 		// Initialize rest of the values
 		particleSystem[i].position = startPosition;
-		particleSystem[i].velocity = size / 1000.f;
+		particleSystem[i].velocity = size / 2000.f;
 		particleSystem[i].size = size;
 		particleSystem[i].isActive = 0;
 		particleSystem[i].color = snowColor;
@@ -283,47 +333,81 @@ void think(void)
 	// Spawn 10 particles every 10 frame
 	if (frameCount % 10 == 0 && isParticlesOn == 1)
 	{
-		for (unsigned int i = 0; i < 10; i++) {
-			// Set it to be active
-			particleSystem[currentSnowPosition].isActive = 1;
+		if (particleSystem[currentSnowPosition].isActive == 0)
+		{
+			// Activate 5 particles for behind snowman
+			for (unsigned int i = 0; i < 8; i++) {
+				// Set it to be active 
+				particleSystem[currentSnowPosition].isActive = 1;
 
-			activeParticle++;
-			currentSnowPosition++;
+				// increment counters
+				activeParticle++;
+				currentSnowPosition++;
 
-			// Back to 0 when reached last element of array
-			if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
+				// Back to 0 when reached last element of array
+				if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
+			}
+
+			// Activate 5 particles for infront snowman
+			for (unsigned int i = 0; i < 8; i++) {
+				// Set it to be active front of snowman
+				particleSystem[currentSnowPosition].isActive = 2;
+
+				// increment counters
+				activeParticle++;
+				currentSnowPosition++;
+
+				// Back to 0 when reached last element of array
+				if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
+			}
 		}
 	}
 
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
 		// Velocity of the snow particle
-		if (particleSystem[i].isActive == 1)
+		if (particleSystem[i].isActive == 1 || particleSystem[i].isActive == 2)
 		{
 			particleSystem[i].position.y -= particleSystem[i].velocity;
 
-			// Wind effect
-			particleSystem[i].position.x += particleSystem[i].velocity / 50.f;
+			// Wind effect left
+			if (isWindOn == 1) 
+			{
+				particleSystem[i].position.x += particleSystem[i].velocity / RandomFloat(10.f, 30.f);
+			}
+
+			// Wind effect right
+			if (isWindOn == 2)
+			{
+				particleSystem[i].position.x -= particleSystem[i].velocity / RandomFloat(10.f, 30.f);
+			}
+
+			// Shake effect
+			if (isShakeOn == 1)
+			{
+				particleSystem[i].position.x += particleSystem[i].velocity / RandomFloat(2.f, 5.f);
+				particleSystem[i].position.x -= particleSystem[i].velocity / RandomFloat(2.f, 5.f);
+			}
 
 			// Gradually decrease transparency when below -0.75 y axis
 			if (particleSystem[i].position.y < -0.75f)
 			{
-				particleSystem[i].transparency -= 0.05f;
+				particleSystem[i].transparency *= 0.95f;
 			}
-		}
 
-		// Reached maximum x or y level of particle destroy
-		if (particleSystem[i].position.y < -0.9f || particleSystem[i].position.x == 1)
-		{
-			particleSystem[i].isActive = 0;
-			activeParticle--;
+			// Reached maximum x or y level of particle destroy
+			if (particleSystem[i].position.y < -0.97f || particleSystem[i].position.x == 1)
+			{
+				particleSystem[i].isActive = 0;
+				activeParticle--;
 
-			Vec2f newStartPosition;
-			newStartPosition.x = RandomFloat(-1.f, 1.f);
-			newStartPosition.y = 1.f;
+				Vec2f newStartPosition;
+				newStartPosition.x = RandomFloat(-1.f, 1.f);
+				newStartPosition.y = 1.f;
 
-			particleSystem[i].position = newStartPosition;
-			particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
+				particleSystem[i].position = newStartPosition;
+				particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
+			}
 		}
 	}
 }
