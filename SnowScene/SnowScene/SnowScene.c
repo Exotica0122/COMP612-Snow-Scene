@@ -12,10 +12,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
- /******************************************************************************
- * Animation & Timing Setup
- ******************************************************************************/
- // Target frame rate (number of Frames Per Second).
+/******************************************************************************
+* Animation & Timing Setup
+******************************************************************************/
+// Target frame rate (number of Frames Per Second).
 #define TARGET_FPS 60
 // Ideal time each frame should be displayed for (in milliseconds).
 const unsigned int FRAME_TIME = 1000 / TARGET_FPS;
@@ -54,6 +54,9 @@ void think(void);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
+#define PI 3.14159265
+#define DEG_TO_RAD PI/180.0f
+
 #define MAX_PARTICLES = 1000
 
 int frameCount = 0;
@@ -70,6 +73,12 @@ typedef struct {
 } Vec3f;
 
 typedef struct {
+	Vec2f location;
+	float size;
+	float alpha;
+} Point2;
+
+typedef struct {
 	Vec2f position;
 	float velocity;
 	int size;
@@ -78,14 +87,9 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
-typedef struct {
-	Particle_t particle;
-	int length;
-	int start;
-	int end;
-};
-
 Particle_t snowSystem[1000];
+
+Vec2f snowmanPosition = { 0.f, -0.6f };
 
 int currentSnowPosition = 0;
 
@@ -100,14 +104,10 @@ int isShakeOn = 0;
 // Start and End are both inclusive
 // [a, b]
 float RandomFloat(float min, float max) {
-	float random = ((float)rand()) / (float)RAND_MAX;
-	float diff = max - min;
-	float r = random * diff;
-	return min + r;
+	return ((max - min) * ((float)rand() / RAND_MAX)) + min;
 }
 
-// display text variable
-
+//const float floorPositionX = RandomFloat(0.7f, 0.9f);
 /******************************************************************************
  * Entry Point (don't put anything except the main function here)
  ******************************************************************************/
@@ -116,7 +116,7 @@ void main(int argc, char **argv)
 	// Initialize the OpenGL window.
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowSize(1000, 800);
+	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(300, 100);
 	glutCreateWindow("Animation");
 	// Set up the scene.
@@ -139,13 +139,33 @@ void main(int argc, char **argv)
 /******************************************************************************
  * GLUT Callbacks (don't add any other functions here)
  ******************************************************************************/
- /*
- Called when GLUT wants us to (re)draw the current animation frame.
- Note: This function must not do anything to update the state of our
-simulated
- world. Animation (moving or rotating things, responding to keyboard input,
- etc.) should only be performed within the think() function provided below.
- */
+void displayBackground()
+{
+	glBegin(GL_POLYGON);
+	{
+		glColor4f(1.f, 1.f, 1.f, 0.8f);
+		glVertex2f(-1, -1);
+		glVertex2f(1, -1);
+		glColor4f(0.2f, 0.6f, 1.f, 1.f);
+		glVertex2f(1, 1);
+		glVertex2f(-1, 1);
+	}
+	glEnd();
+}
+
+void displayFloor()
+{
+	glBegin(GL_POLYGON);
+	{
+		glColor3f(0.5f, 0.5f, 0.5f);
+		glVertex2f(0.8f, -0.6f);
+		glVertex2f(-0.8f, -0.6f);
+		glColor3f(0.9f, 0.9f, 0.9f);
+		glVertex2f(-1.5, -1.f);
+		glVertex2f(1.5, -1.f);
+	}
+	glEnd();
+}
 
 void displaySnow(int position)
 {
@@ -164,9 +184,56 @@ void displaySnow(int position)
 	}
 }
 
+void drawCircle(float x, float y, float radius, Vec3f centerColor, Vec3f outerColor) {
+	glBegin(GL_TRIANGLE_FAN);
+	glColor3f(centerColor.x, centerColor.y, centerColor.z);
+	glVertex2f(x, y);
+	glColor3f(outerColor.x, outerColor.y, outerColor.z);
+	for (int theta = 0; theta <= 360; theta += 10)
+	{
+		glVertex2f((cos(theta * DEG_TO_RAD) * radius + x), (sin(theta * DEG_TO_RAD) * radius + y));
+	}
+	glEnd();
+}
+
+void drawPentagon(float x, float y, float radius, Vec3f centerColor, Vec3f outerColor) {
+	glBegin(GL_TRIANGLE_FAN);
+	glColor3f(centerColor.x, centerColor.y, centerColor.z);
+	glVertex2f(x, y);
+	glColor3f(outerColor.x, outerColor.y, outerColor.z);
+	for (int theta = 0; theta <= 360; theta += 72)
+	{
+		glVertex2f((cos(theta * DEG_TO_RAD) * radius + x), (sin(theta * DEG_TO_RAD) * radius + y));
+	}
+	glEnd();
+}
+
+void drawSnowman(float x, float y)
+{
+	Vec3f white = { 1.f, 1.f, 1.f };
+	Vec3f black = { 0.f, 0.f, 0.f };
+	Vec3f lightBlue = { 0.68f, 0.85f, 0.9f };
+	Vec3f orange = { 0.8f, 0.502f, 0.f };
+
+	// body
+	drawCircle(x, y - 0.225f, 0.15f, white, lightBlue);
+	drawCircle(x, y, 0.125f, white, lightBlue);
+
+	// left eye
+	drawCircle(x - 0.04f, y + 0.05f, 0.015f, black, black);
+	drawCircle(x - 0.04f, y + 0.05f, 0.005f, white, black);
+
+	// right eye
+	drawCircle(x + 0.04f, y + 0.05f, 0.015f, black, black);
+	drawCircle(x + 0.04f, y + 0.05f, 0.005f, white, black);
+
+	// nose
+	drawPentagon(x, y, 0.0225f, white, orange);
+}
+
 void displayText(char *text, float x, float y)
 {
-	glColor3f(1.0, 1.0, 1.0);
+	glColor3f(0.2f, 0.2f, 0.2f);
 	glRasterPos2f(x, y);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, text);
 }
@@ -179,21 +246,29 @@ void displayAmountOfActiveParticles()
 	strcat(particleString, activeParticleString);
 	strcat(particleString, " of 1000");
 
-	glColor3f(1.0, 1.0, 1.0);
+	glColor3f(0.2f, 0.2f, 0.2f);
 	glRasterPos2f(-0.98f, 0.9f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 }
 
 void display(void)
 {
-	frameCount++;
-
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	frameCount++;
+
+	displayBackground();
+	displayFloor();
+
 	// Draw snows behind snowman
 	displaySnow(1);
+
+	// Snowman display
+	
+
+	drawSnowman(snowmanPosition.x, snowmanPosition.y);
 
 	// Draw snows infront of snowman
 	displaySnow(2);
@@ -250,6 +325,20 @@ void keyPressed(unsigned char key, int x, int y)
 		exit(0);
 		break;
 
+	case 'p':
+		snowmanPosition.y += 0.01f;
+		break;
+	case ';':
+		//do something here
+		snowmanPosition.y -= 0.01f;
+		break;
+	case 'l':
+		snowmanPosition.x -= 0.05f;
+		break;
+	case '\'':
+		snowmanPosition.x += 0.05f;
+		break;
+
 	case KEY_EXIT:
 		exit(0);
 		break;
@@ -285,14 +374,16 @@ void initialiseSnow(Particle_t *snow)
 	snow->position.x = RandomFloat(-1.f, 1.f);
 	snow->position.y = 1.f;
 
-	int size = RandomFloat(3.f, 7.f);
-	snow->size = size;
-	snow->velocity = size / 1250.f;
+	snow->size = RandomFloat(3.f, 7.f);
+	snow->velocity = snow->size / 1250.f;
 
 	snow->isActive = 0;
 
+	// r
 	snow->color.x = 0.678f;
+	// g
 	snow->color.y = 0.847f;
+	// b
 	snow->color.z = 1.f;
 
 	snow->transparency = RandomFloat(0.2f, 1.f);
@@ -320,6 +411,7 @@ void init(void)
 // postion=1 will spawn behind, position=2 will spawn in front of snowman
 void spawnSnow(int position)
 {
+	// random snow amount between 0 and 8 will spawn
 	int snowAmount = (int) RandomFloat(0, 8);
 
 	int snowSpawnCounter = 0;
@@ -374,6 +466,7 @@ void decreaseTransparency(Particle_t *snow)
 
 void recycleSnow(Particle_t *snow)
 {
+	// reset positions and transparency
 	snow->position.x = RandomFloat(-1.f, 1.f);
 	snow->position.y = 1.f;
 	snow->transparency = RandomFloat(0.2f, 1.f);
