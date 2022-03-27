@@ -1,8 +1,8 @@
 ﻿  SnowScene.c
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(83): warning C4094: untagged 'struct' declared no symbols
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(151): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(293): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(337): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(86): warning C4094: untagged 'struct' declared no symbols
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(156): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(288): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(349): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
   C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
   1 File(s) copied

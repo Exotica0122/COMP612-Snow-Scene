@@ -38,6 +38,9 @@ unsigned int frameStartTime = 0;
 /******************************************************************************
  * GLUT Callback Prototypes
  ******************************************************************************/
+void displayText(char *text, float x, float y);
+void displayAmountOfActiveParticles(void);
+
 void display(void);
 void reshape(int width, int h);
 void keyPressed(unsigned char key, int x, int y);
@@ -82,7 +85,7 @@ typedef struct {
 	int end;
 };
 
-Particle_t particleSystem[1000];
+Particle_t snowSystem[1000];
 
 int currentSnowPosition = 0;
 
@@ -102,6 +105,8 @@ float RandomFloat(float min, float max) {
 	float r = random * diff;
 	return min + r;
 }
+
+// display text variable
 
 /******************************************************************************
  * Entry Point (don't put anything except the main function here)
@@ -144,19 +149,39 @@ simulated
 
 void displaySnow(int position)
 {
-	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
 	{
-		if (particleSystem[i].isActive == position)
+		if (snowSystem[i].isActive == position)
 		{
-			glPointSize(particleSystem[i].size);
+			glPointSize(snowSystem[i].size);
 			glBegin(GL_POINTS);
 			{
-				glColor4f(particleSystem[i].color.x, particleSystem[i].color.y, particleSystem[i].color.z, particleSystem[i].transparency);
-				glVertex2f(particleSystem[i].position.x, particleSystem[i].position.y);
+				glColor4f(snowSystem[i].color.x, snowSystem[i].color.y, snowSystem[i].color.z, snowSystem[i].transparency);
+				glVertex2f(snowSystem[i].position.x, snowSystem[i].position.y);
 			}
 			glEnd();
 		}
 	}
+}
+
+void displayText(char *text, float x, float y)
+{
+	glColor3f(1.0, 1.0, 1.0);
+	glRasterPos2f(x, y);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, text);
+}
+
+void displayAmountOfActiveParticles()
+{
+	char particleString[40] = "particles: ";
+	char activeParticleString[6];
+	_itoa(activeParticle, activeParticleString, 10);
+	strcat(particleString, activeParticleString);
+	strcat(particleString, " of 1000");
+
+	glColor3f(1.0, 1.0, 1.0);
+	glRasterPos2f(-0.98f, 0.9f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 }
 
 void display(void)
@@ -173,19 +198,19 @@ void display(void)
 	// Draw snows infront of snowman
 	displaySnow(2);
 
-	glColor3f(1.0, 1.0, 1.0);
-	glRasterPos2f(-1.f, 0.95f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_12, "Diagnostics:");
+	displayText("Diagnostics:", -1.f, 0.95f);
 
-	char particleString[40] = "particles: ";
-	char activeParticleString[6];
-	_itoa(activeParticle, activeParticleString, 10);
-	strcat(particleString, activeParticleString);
+	displayAmountOfActiveParticles();
 
+	displayText("Scene Controls:", -1.f, 0.85f);
 
-	glColor3f(1.0, 1.0, 1.0);
-	glRasterPos2f(-1.f, 0.90f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
+	displayText("s: toggle snow", -0.98f, 0.8f);
+
+	displayText("a: toggle shake", -0.98f, 0.75f);
+
+	displayText("d: toggle wind", -0.98f, 0.7f);
+
+	displayText("q: quit", -0.98f, 0.65f);
 
 	glutSwapBuffers();
 }
@@ -255,6 +280,23 @@ void idle(void)
  * Animation-Specific Functions (Add your own functions at the end of this section)
  ******************************************************************************/
 
+void initialiseSnow(Particle_t *snow)
+{
+	snow->position.x = RandomFloat(-1.f, 1.f);
+	snow->position.y = 1.f;
+
+	int size = RandomFloat(3.f, 7.f);
+	snow->size = size;
+	snow->velocity = size / 1250.f;
+
+	snow->isActive = 0;
+
+	snow->color.x = 0.678f;
+	snow->color.y = 0.847f;
+	snow->color.z = 1.f;
+
+	snow->transparency = RandomFloat(0.2f, 1.f);
+}
 
 void init(void)
 {
@@ -266,32 +308,9 @@ void init(void)
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 
 	// Initialize all particles before rendering the first frame
-	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
 	{
-		// Position
-		Vec2f startPosition;
-		startPosition.x = RandomFloat(-1.f, 1.f);
-		startPosition.y = 1.f;
-
-		// Color
-		Vec3f snowColor;
-		// Red
-		snowColor.x = 0.678f;
-		// Green
-		snowColor.y = 0.847f;
-		// Blue
-		snowColor.z = 1.f;
-
-		// Size (Affects Gravity)
-		int size = RandomFloat(3.f, 7.f);
-
-		// Initialize rest of the values
-		particleSystem[i].position = startPosition;
-		particleSystem[i].velocity = size / 1250.f;
-		particleSystem[i].size = size;
-		particleSystem[i].isActive = 0;
-		particleSystem[i].color = snowColor;
-		particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
+		initialiseSnow(&snowSystem[i]);
 	}
 }
 /******************************************************************************
@@ -306,11 +325,11 @@ void spawnSnow(int position)
 	int snowSpawnCounter = 0;
 
 	// Activate 0 to 8 particles
-	while (snowSpawnCounter < snowAmount && currentSnowPosition < sizeof(particleSystem) / sizeof(particleSystem[0])) {
-		if (particleSystem[currentSnowPosition].isActive == 0)
+	while (snowSpawnCounter < snowAmount && currentSnowPosition < sizeof(snowSystem) / sizeof(snowSystem[0])) {
+		if (snowSystem[currentSnowPosition].isActive == 0)
 		{
 			// Set it to be active behind or infront of snowman
-			particleSystem[currentSnowPosition].isActive = position;
+			snowSystem[currentSnowPosition].isActive = position;
 
 			// increment counters
 			activeParticle++;
@@ -375,35 +394,37 @@ void think(void)
 		spawnSnow(2);
 	}
 
-	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
 	{
 		// if snow is activated
-		if (particleSystem[i].isActive == 1 || particleSystem[i].isActive == 2)
+		if (snowSystem[i].isActive == 1 || snowSystem[i].isActive == 2)
 		{
-			gravityEffect(&particleSystem[i]);
+			gravityEffect(&snowSystem[i]);
 
 			if (isWindOn != 0)
 			{
-				windEffect(&particleSystem[i]);
+				windEffect(&snowSystem[i]);
 			}
 
 			if (isShakeOn == 1)
 			{
-				shakeEffect(&particleSystem[i]);
+				shakeEffect(&snowSystem[i]);
 			}
 
 			// Gradually decrease transparency when below -0.75 y axis
-			if (particleSystem[i].position.y < -0.75f)
+			if (snowSystem[i].position.y < -0.75f)
 			{
-				decreaseTransparency(&particleSystem[i]);
+				decreaseTransparency(&snowSystem[i]);
 			}
 
 			// Reached maximum x or y level of particle destroy
-			if (particleSystem[i].position.y < -0.97f || particleSystem[i].position.x == 1 || particleSystem[i].position.x == -1)
+			if (snowSystem[i].position.y < -0.97f || snowSystem[i].position.x == 1 || snowSystem[i].position.x == -1)
 			{
-				recycleSnow(&particleSystem[i]);
+				recycleSnow(&snowSystem[i]);
 			}
 		}
 	}
+
+
 }
 /******************************************************************************/
