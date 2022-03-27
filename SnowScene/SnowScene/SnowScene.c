@@ -1,12 +1,4 @@
-/******************************************************************************
- *
- * Animation v1.0 (23/02/2021)
- *
- * This template provides a basic FPS-limited render loop for an animated scene.
- *
- ******************************************************************************/
 #define _CRT_SECURE_NO_WARNINGS
-
 #include <Windows.h>
 #include <freeglut.h>
 #include <math.h>
@@ -51,13 +43,20 @@ void idle(void);
 void main(int argc, char **argv);
 void init(void);
 void think(void);
+
+//void spawnSnow(int position);
+//void gravityEffect(Particle_t *snow);
+//void windEffect(Particle_t *snow);
+//void shakeEffect(Particle_t *snow);
+//void decreaseTransparency(Particle_t *snow);
+//void recycleSnow(Particle_t *snow);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
 #define PI 3.14159265
 #define DEG_TO_RAD PI/180.0f
 
-#define MAX_PARTICLES = 1000
+#define MAX_PARTICLES 1000
 
 int frameCount = 0;
 
@@ -73,12 +72,6 @@ typedef struct {
 } Vec3f;
 
 typedef struct {
-	Vec2f location;
-	float size;
-	float alpha;
-} Point2;
-
-typedef struct {
 	Vec2f position;
 	float velocity;
 	int size;
@@ -87,7 +80,7 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
-Particle_t snowSystem[1000];
+Particle_t snowSystem[MAX_PARTICLES];
 
 Vec2f snowmanPosition = { 0.f, -0.6f };
 
@@ -169,7 +162,7 @@ void displayFloor()
 
 void displaySnow(int position)
 {
-	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
+	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
 	{
 		if (snowSystem[i].isActive == position)
 		{
@@ -259,6 +252,7 @@ void display(void)
 
 	frameCount++;
 
+	// Scene display
 	displayBackground();
 	displayFloor();
 
@@ -266,8 +260,6 @@ void display(void)
 	displaySnow(1);
 
 	// Snowman display
-	
-
 	drawSnowman(snowmanPosition.x, snowmanPosition.y);
 
 	// Draw snows infront of snowman
@@ -399,7 +391,7 @@ void init(void)
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 
 	// Initialize all particles before rendering the first frame
-	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
+	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
 	{
 		initialiseSnow(&snowSystem[i]);
 	}
@@ -417,7 +409,7 @@ void spawnSnow(int position)
 	int snowSpawnCounter = 0;
 
 	// Activate 0 to 8 particles
-	while (snowSpawnCounter < snowAmount && currentSnowPosition < sizeof(snowSystem) / sizeof(snowSystem[0])) {
+	while (snowSpawnCounter < snowAmount && currentSnowPosition < MAX_PARTICLES) {
 		if (snowSystem[currentSnowPosition].isActive == 0)
 		{
 			// Set it to be active behind or infront of snowman
@@ -487,7 +479,7 @@ void think(void)
 		spawnSnow(2);
 	}
 
-	for (unsigned int i = 0; i < sizeof(snowSystem) / sizeof(snowSystem[0]); i++)
+	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
 	{
 		// if snow is activated
 		if (snowSystem[i].isActive == 1 || snowSystem[i].isActive == 2)
