@@ -11,10 +11,11 @@
 #include <freeglut.h>
 #include <math.h>
 #include <stdio.h>
-/******************************************************************************
-* Animation & Timing Setup
-******************************************************************************/
-// Target frame rate (number of Frames Per Second).
+#include <stdlib.h>
+ /******************************************************************************
+ * Animation & Timing Setup
+ ******************************************************************************/
+ // Target frame rate (number of Frames Per Second).
 #define TARGET_FPS 60
 // Ideal time each frame should be displayed for (in milliseconds).
 const unsigned int FRAME_TIME = 1000 / TARGET_FPS;
@@ -29,10 +30,10 @@ unsigned int frameStartTime = 0;
 /******************************************************************************
  * Keyboard Input Handling Setup
  ******************************************************************************/
-// Define all character keys used for input (add any new key definitions here).
-// Note: USE ONLY LOWERCASE CHARACTERS HERE. The keyboard handler provided 
-// converts all
-// characters typed by the user to lowercase, so the SHIFT key is ignored.
+ // Define all character keys used for input (add any new key definitions here).
+ // Note: USE ONLY LOWERCASE CHARACTERS HERE. The keyboard handler provided 
+ // converts all
+ // characters typed by the user to lowercase, so the SHIFT key is ignored.
 #define KEY_EXIT 27 // Escape key.
 /******************************************************************************
  * GLUT Callback Prototypes
@@ -50,7 +51,6 @@ void think(void);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
-
 #define MAX_PARTICLES = 1000
 
 int frameCount = 0;
@@ -83,8 +83,12 @@ typedef struct {
 };
 
 Particle_t particleSystem[1000];
+
 int currentSnowPosition = 0;
+
 int activeParticle = 0;
+
+// flags
 int isParticlesOn = 0;
 int isWindOn = 0;
 int isShakeOn = 0;
@@ -92,16 +96,16 @@ int isShakeOn = 0;
 // This returns a random float between two values 
 // Start and End are both inclusive
 // [a, b]
-float RandomFloat(float a, float b) {
+float RandomFloat(float min, float max) {
 	float random = ((float)rand()) / (float)RAND_MAX;
-	float diff = b - a;
+	float diff = max - min;
 	float r = random * diff;
-	return a + r;
+	return min + r;
 }
 
- /******************************************************************************
-  * Entry Point (don't put anything except the main function here)
-  ******************************************************************************/
+/******************************************************************************
+ * Entry Point (don't put anything except the main function here)
+ ******************************************************************************/
 void main(int argc, char **argv)
 {
 	// Initialize the OpenGL window.
@@ -137,6 +141,24 @@ simulated
  world. Animation (moving or rotating things, responding to keyboard input,
  etc.) should only be performed within the think() function provided below.
  */
+
+void displaySnow(int position)
+{
+	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
+	{
+		if (particleSystem[i].isActive == position)
+		{
+			glPointSize(particleSystem[i].size);
+			glBegin(GL_POINTS);
+			{
+				glColor4f(particleSystem[i].color.x, particleSystem[i].color.y, particleSystem[i].color.z, particleSystem[i].transparency);
+				glVertex2f(particleSystem[i].position.x, particleSystem[i].position.y);
+			}
+			glEnd();
+		}
+	}
+}
+
 void display(void)
 {
 	frameCount++;
@@ -146,43 +168,17 @@ void display(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Draw snows behind snowman
-	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
-	{
-		Particle_t currentSnow = particleSystem[i];
-		if (currentSnow.isActive == 1)
-		{
-			glPointSize(currentSnow.size);
-			glBegin(GL_POINTS);
-			{
-				glColor4f(currentSnow.color.x, currentSnow.color.y, currentSnow.color.z, currentSnow.transparency);
-				glVertex2f(currentSnow.position.x, currentSnow.position.y);
-			}
-			glEnd();
-		}
-	}
+	displaySnow(1);
 
 	// Draw snows infront of snowman
-	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
-	{
-		Particle_t currentSnow = particleSystem[i];
-		if (currentSnow.isActive == 2)
-		{
-			glPointSize(currentSnow.size);
-			glBegin(GL_POINTS);
-			{
-				glColor4f(currentSnow.color.x, currentSnow.color.y, currentSnow.color.z, currentSnow.transparency);
-				glVertex2f(currentSnow.position.x, currentSnow.position.y);
-			}
-			glEnd();
-		}
-	}
+	displaySnow(2);
 
 	glColor3f(1.0, 1.0, 1.0);
 	glRasterPos2f(-1.f, 0.95f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, "Diagnostics:");
 
 	char particleString[40] = "particles: ";
-	char activeParticleString[4];
+	char activeParticleString[6];
 	_itoa(activeParticle, activeParticleString, 10);
 	strcat(particleString, activeParticleString);
 
@@ -192,38 +188,25 @@ void display(void)
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 
 	glutSwapBuffers();
-	/*
-	TEMPLATE: REPLACE THIS COMMENT WITH YOUR DRAWING CODE
-	Separate reusable pieces of drawing code into functions, which you can
-	add
-	to the "Animation-Specific Functions" section below.
-	Remember to add prototypes for any new functions to the "Animation-
-	Specific
-	Function Prototypes" section near the top of this template.
-	*/
 }
+
+
 /*
 Called when the OpenGL window has been resized.
 */
 void reshape(int width, int h)
 {
 }
-/*
-Called each time a character key (e.g. a letter, number, or symbol) is
-pressed.
-*/
+
+
 void keyPressed(unsigned char key, int x, int y)
 {
 	switch (tolower(key)) {
-		/*
-		TEMPLATE: Add any new character key controls here.
-		Rather than using literals (e.g. "d" for diagnostics), create a
-		new KEY_
-		definition in the "Keyboard Input Handling Setup" section of this
-		file.
-		*/
 	case 's':
-		if (isParticlesOn == 0) isParticlesOn = 1;
+		if (isParticlesOn == 0) {
+			currentSnowPosition = 0;
+			isParticlesOn = 1;
+		}
 		else isParticlesOn = 0;
 		break;
 
@@ -247,14 +230,8 @@ void keyPressed(unsigned char key, int x, int y)
 		break;
 	}
 }
-/*
-Called by GLUT when it's not rendering a frame.
-Note: We use this to handle animation and timing. You shouldn't need to
-modify
-this callback at all. Instead, place your animation logic (e.g. moving or
-rotating
-things) within the think() method provided with this template.
-*/
+
+
 void idle(void)
 {
 	// Wait until it's time to render the next frame.
@@ -277,9 +254,7 @@ void idle(void)
 /******************************************************************************
  * Animation-Specific Functions (Add your own functions at the end of this section)
  ******************************************************************************/
- /*
- Initialise OpenGL and set up our scene before we begin the render loop.
- */
+
 
 void init(void)
 {
@@ -308,105 +283,125 @@ void init(void)
 		snowColor.z = 1.f;
 
 		// Size (Affects Gravity)
-		int size = RandomFloat(3.f, 10.f);
+		int size = RandomFloat(3.f, 7.f);
 
 		// Initialize rest of the values
 		particleSystem[i].position = startPosition;
-		particleSystem[i].velocity = size / 2000.f;
+		particleSystem[i].velocity = size / 1250.f;
 		particleSystem[i].size = size;
 		particleSystem[i].isActive = 0;
 		particleSystem[i].color = snowColor;
 		particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
 	}
 }
-/*
-Advance our animation by FRAME_TIME milliseconds.
-Note: Our template's GLUT idle() callback calls this once before each new
-frame is drawn, EXCEPT the very first frame drawn after our application
-starts. Any setup required before the first frame is drawn should be placed
-in init().
-*/
+/******************************************************************************
+* Animation functions for think function
+ ******************************************************************************/
 
+// postion=1 will spawn behind, position=2 will spawn in front of snowman
+void spawnSnow(int position)
+{
+	int snowAmount = (int) RandomFloat(0, 8);
+
+	int snowSpawnCounter = 0;
+
+	// Activate 0 to 8 particles
+	while (snowSpawnCounter < snowAmount && currentSnowPosition < sizeof(particleSystem) / sizeof(particleSystem[0])) {
+		if (particleSystem[currentSnowPosition].isActive == 0)
+		{
+			// Set it to be active behind or infront of snowman
+			particleSystem[currentSnowPosition].isActive = position;
+
+			// increment counters
+			activeParticle++;
+			snowSpawnCounter++;
+		}
+		currentSnowPosition++;
+	}
+}
+
+void gravityEffect(Particle_t *snow)
+{
+	snow->position.y -= snow->velocity;
+}
+
+void windEffect(Particle_t *snow)
+{
+	int windVelocity = RandomFloat(5.f, 20.f);
+
+	// Wind effect left
+	if (isWindOn == 1)
+	{
+		snow->position.x += snow->velocity / windVelocity ;
+	}
+
+	// Wind effect right
+	if (isWindOn == 2)
+	{
+		snow->position.x -= snow->velocity / windVelocity;
+	}
+}
+
+void shakeEffect(Particle_t *snow)
+{
+	snow->position.x += snow->velocity / RandomFloat(5.f, 8.f);
+	snow->position.x -= snow->velocity / RandomFloat(5.f, 8.f);
+}
+
+void decreaseTransparency(Particle_t *snow)
+{
+	snow->transparency *= 0.95f;
+}
+
+void recycleSnow(Particle_t *snow)
+{
+	snow->position.x = RandomFloat(-1.f, 1.f);
+	snow->position.y = 1.f;
+	snow->transparency = RandomFloat(0.2f, 1.f);
+
+	// deactivate snow if turned off
+	if (isParticlesOn == 0) {
+		snow->isActive = 0;
+		activeParticle--;
+	}
+}
 
 void think(void)
 {
-	// Spawn 10 particles every 10 frame
+	// Spawn particles every 10 frame
 	if (frameCount % 10 == 0 && isParticlesOn == 1)
 	{
-		if (particleSystem[currentSnowPosition].isActive == 0)
-		{
-			// Activate 5 particles for behind snowman
-			for (unsigned int i = 0; i < 8; i++) {
-				// Set it to be active 
-				particleSystem[currentSnowPosition].isActive = 1;
-
-				// increment counters
-				activeParticle++;
-				currentSnowPosition++;
-
-				// Back to 0 when reached last element of array
-				if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
-			}
-
-			// Activate 5 particles for infront snowman
-			for (unsigned int i = 0; i < 8; i++) {
-				// Set it to be active front of snowman
-				particleSystem[currentSnowPosition].isActive = 2;
-
-				// increment counters
-				activeParticle++;
-				currentSnowPosition++;
-
-				// Back to 0 when reached last element of array
-				if (currentSnowPosition >= sizeof(particleSystem) / sizeof(particleSystem[0])) currentSnowPosition = 0;
-			}
-		}
+		spawnSnow(1);
+		spawnSnow(2);
 	}
 
 	for (unsigned int i = 0; i < sizeof(particleSystem) / sizeof(particleSystem[0]); i++)
 	{
-		// Velocity of the snow particle
+		// if snow is activated
 		if (particleSystem[i].isActive == 1 || particleSystem[i].isActive == 2)
 		{
-			particleSystem[i].position.y -= particleSystem[i].velocity;
+			gravityEffect(&particleSystem[i]);
 
-			// Wind effect left
-			if (isWindOn == 1) 
+			if (isWindOn != 0)
 			{
-				particleSystem[i].position.x += particleSystem[i].velocity / RandomFloat(10.f, 30.f);
+				windEffect(&particleSystem[i]);
 			}
 
-			// Wind effect right
-			if (isWindOn == 2)
-			{
-				particleSystem[i].position.x -= particleSystem[i].velocity / RandomFloat(10.f, 30.f);
-			}
-
-			// Shake effect
 			if (isShakeOn == 1)
 			{
-				particleSystem[i].position.x += particleSystem[i].velocity / RandomFloat(2.f, 5.f);
-				particleSystem[i].position.x -= particleSystem[i].velocity / RandomFloat(2.f, 5.f);
+				shakeEffect(&particleSystem[i]);
 			}
 
 			// Gradually decrease transparency when below -0.75 y axis
 			if (particleSystem[i].position.y < -0.75f)
 			{
-				particleSystem[i].transparency *= 0.95f;
+				decreaseTransparency(&particleSystem[i]);
 			}
 
 			// Reached maximum x or y level of particle destroy
-			if (particleSystem[i].position.y < -0.97f || particleSystem[i].position.x == 1)
+			if (particleSystem[i].position.y < -0.97f || particleSystem[i].position.x == 1 || particleSystem[i].position.x == -1)
 			{
-				particleSystem[i].isActive = 0;
-				activeParticle--;
-
-				Vec2f newStartPosition;
-				newStartPosition.x = RandomFloat(-1.f, 1.f);
-				newStartPosition.y = 1.f;
-
-				particleSystem[i].position = newStartPosition;
-				particleSystem[i].transparency = RandomFloat(0.2f, 1.f);
+				recycleSnow(&particleSystem[i]);
 			}
 		}
 	}
