@@ -27,15 +27,20 @@ unsigned int frameStartTime = 0;
  // converts all
  // characters typed by the user to lowercase, so the SHIFT key is ignored.
 #define KEY_EXIT 27 // Escape key.
+
+// Special movement keys
+#define KEY_ARROW_UP 101
+#define KEY_ARROW_DOWN 103
+#define KEY_ARROW_RIGHT 102
+#define KEY_ARROW_LEFT 100
 /******************************************************************************
  * GLUT Callback Prototypes
  ******************************************************************************/
-void displayText(char *text, float x, float y);
-void displayAmountOfActiveParticles(void);
-
 void display(void);
 void reshape(int width, int h);
 void keyPressed(unsigned char key, int x, int y);
+void keyReleased(unsigned char key, int x, int y);
+void specialKeyPressed(unsigned char key, int x, int y);
 void idle(void);
 /******************************************************************************
  * Animation-Specific Function Prototypes (add your own here)
@@ -43,21 +48,18 @@ void idle(void);
 void main(int argc, char **argv);
 void init(void);
 void think(void);
-
-//void spawnSnow(int position);
-//void gravityEffect(Particle_t *snow);
-//void windEffect(Particle_t *snow);
-//void shakeEffect(Particle_t *snow);
-//void decreaseTransparency(Particle_t *snow);
-//void recycleSnow(Particle_t *snow);
 /******************************************************************************
  * Animation-Specific Setup (Add your own definitions, constants, and globals here)
  ******************************************************************************/
+
+// Circle helpers
 #define PI 3.14159265
 #define DEG_TO_RAD PI/180.0f
 
+// Particle system length
 #define MAX_PARTICLES 1000
 
+// Frame counter
 int frameCount = 0;
 
 typedef struct {
@@ -80,18 +82,25 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
+
+// Snow system
 Particle_t snowSystem[MAX_PARTICLES];
+int currentSnowPosition = 0;
+int activeParticle = 0;
 
 Vec2f snowmanPosition = { 0.f, -0.6f };
 
-int currentSnowPosition = 0;
-
-int activeParticle = 0;
-
-// flags
+// Flags
 int isParticlesOn = 0;
 int isWindOn = 0;
 int isShakeOn = 0;
+
+// Keyboard flags
+
+int arrowUpOn = 0;
+int arrowDownOn = 0;
+int arrowLeftOn = 0;
+int arrowRightOn = 0;
 
 // This returns a random float between two values 
 // Start and End are both inclusive
@@ -121,6 +130,8 @@ void main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyPressed);
+	glutSpecialUpFunc(keyReleased);
+	glutSpecialFunc(specialKeyPressed);
 	glutIdleFunc(idle);
 	// Record when we started rendering the very first frame (which should happen
 	// after we call glutMainLoop).
@@ -201,6 +212,9 @@ void drawPentagon(float x, float y, float radius, Vec3f centerColor, Vec3f outer
 	glEnd();
 }
 
+
+// Draws snowman in the center of snowmans face
+// x,y will be where the center of snowmans face will me
 void drawSnowman(float x, float y)
 {
 	Vec3f white = { 1.f, 1.f, 1.f };
@@ -317,22 +331,44 @@ void keyPressed(unsigned char key, int x, int y)
 		exit(0);
 		break;
 
-	case 'p':
-		snowmanPosition.y += 0.01f;
-		break;
-	case ';':
-		//do something here
-		snowmanPosition.y -= 0.01f;
-		break;
-	case 'l':
-		snowmanPosition.x -= 0.05f;
-		break;
-	case '\'':
-		snowmanPosition.x += 0.05f;
-		break;
-
 	case KEY_EXIT:
 		exit(0);
+		break;
+	}
+}
+
+void keyReleased(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case KEY_ARROW_UP:
+		arrowUpOn = 0;
+		break;
+	case KEY_ARROW_DOWN:
+		arrowDownOn = 0;
+		break;
+	case KEY_ARROW_LEFT:
+		arrowLeftOn = 0;
+		break;
+	case KEY_ARROW_RIGHT:
+		arrowRightOn = 0;
+		break;
+	}
+}
+
+void specialKeyPressed(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case KEY_ARROW_UP:
+		arrowUpOn = 1;
+		break;
+	case KEY_ARROW_DOWN:
+		arrowDownOn = 1;
+		break;
+	case KEY_ARROW_LEFT:
+		arrowLeftOn = 1;
+		break;
+	case KEY_ARROW_RIGHT:
+		arrowRightOn = 1;
 		break;
 	}
 }
@@ -470,8 +506,30 @@ void recycleSnow(Particle_t *snow)
 	}
 }
 
+void moveSnowmanUp()
+{
+	snowmanPosition.y += 0.01f;
+}
+
+void moveSnowmanDown()
+{
+	snowmanPosition.y -= 0.01f;
+}
+
+void moveSnowmanLeft()
+{
+	snowmanPosition.x -= 0.05f;
+}
+
+void moveSnowmanRight()
+{
+	snowmanPosition.x += 0.05f;
+}
+
 void think(void)
 {
+	// Snow particle system
+
 	// Spawn particles every 10 frame
 	if (frameCount % 10 == 0 && isParticlesOn == 1)
 	{
@@ -510,6 +568,10 @@ void think(void)
 		}
 	}
 
-
+	// Snowman movement system
+	if (arrowUpOn == 1) moveSnowmanUp();
+	if (arrowDownOn == 1) moveSnowmanDown();
+	if (arrowLeftOn == 1) moveSnowmanLeft();
+	if (arrowRightOn == 1) moveSnowmanRight();
 }
 /******************************************************************************/
