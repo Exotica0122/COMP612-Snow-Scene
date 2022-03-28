@@ -430,18 +430,18 @@ void gravityEffect(Particle_t *snow)
 
 void windEffect(Particle_t *snow)
 {
-	int windVelocity = RandomFloat(5.f, 20.f);
+	float windVelocity = RandomFloat(3.f, 4.f);
 
 	// Wind effect left
 	if (isWindOn == 1)
 	{
-		snow->position.x += snow->velocity / windVelocity ;
+		snow->position.x += snow->velocity / (snow->position.y + windVelocity);
 	}
 
 	// Wind effect right
 	if (isWindOn == 2)
 	{
-		snow->position.x -= snow->velocity / windVelocity;
+		snow->position.x -= snow->velocity / (snow->position.y + windVelocity);
 	}
 }
 
