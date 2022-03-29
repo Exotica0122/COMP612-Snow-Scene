@@ -1,10 +1,10 @@
 ﻿  SnowScene.c
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(133): warning C4028: formal parameter 1 different from declaration
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(134): warning C4028: formal parameter 1 different from declaration
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(180): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(198): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(210): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(405): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-  SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
-  C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(134): warning C4028: formal parameter 1 different from declaration
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(135): warning C4028: formal parameter 1 different from declaration
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(181): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(199): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(211): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\ykx5915\documents\github\comp612-snow-scene\snowscene\snowscene\snowscene.c(406): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+  SnowScene.vcxproj -> C:\Users\ykx5915\Documents\GitHub\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
+  C:\Users\ykx5915\Documents\GitHub\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
   1 File(s) copied

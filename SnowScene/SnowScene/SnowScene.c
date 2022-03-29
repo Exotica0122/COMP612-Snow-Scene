@@ -88,7 +88,8 @@ Particle_t snowSystem[MAX_PARTICLES];
 int currentSnowPosition = 0;
 int activeParticle = 0;
 
-Vec2f snowmanPosition = { 0.f, -0.6f };
+Vec2f snowmanPosition = { 0.f, -1.f };
+Vec2f groundPosition = { 0.8f, -0.6f };
 
 // Flags
 int isParticlesOn = 0;
@@ -162,8 +163,8 @@ void displayFloor()
 	glBegin(GL_POLYGON);
 	{
 		glColor3f(0.5f, 0.5f, 0.5f);
-		glVertex2f(0.8f, -0.6f);
-		glVertex2f(-0.8f, -0.6f);
+		glVertex2f(groundPosition.x, groundPosition.y);
+		glVertex2f(-groundPosition.x, groundPosition.y);
 		glColor3f(0.9f, 0.9f, 0.9f);
 		glVertex2f(-1.5, -1.f);
 		glVertex2f(1.5, -1.f);
@@ -213,8 +214,8 @@ void drawPentagon(float x, float y, float radius, Vec3f centerColor, Vec3f outer
 }
 
 
-// Draws snowman in the center of snowmans face
-// x,y will be where the center of snowmans face will me
+// Draws snowman at the bottom of its sprite
+// x,y will be the bottom edge of snowmans body
 void drawSnowman(float x, float y)
 {
 	Vec3f white = { 1.f, 1.f, 1.f };
@@ -223,19 +224,19 @@ void drawSnowman(float x, float y)
 	Vec3f orange = { 0.8f, 0.502f, 0.f };
 
 	// body
-	drawCircle(x, y - 0.225f, 0.15f, white, lightBlue);
-	drawCircle(x, y, 0.125f, white, lightBlue);
+	drawCircle(x, y + 0.15f, 0.15f, white, lightBlue);
+	drawCircle(x, y + 0.35f, 0.125f, white, lightBlue);
 
 	// left eye
-	drawCircle(x - 0.04f, y + 0.05f, 0.015f, black, black);
-	drawCircle(x - 0.04f, y + 0.05f, 0.005f, white, black);
+	drawCircle(x - 0.04f, y + 0.39f, 0.015f, black, black);
+	drawCircle(x - 0.04f, y + 0.39f, 0.005f, white, black);
 
 	// right eye
-	drawCircle(x + 0.04f, y + 0.05f, 0.015f, black, black);
-	drawCircle(x + 0.04f, y + 0.05f, 0.005f, white, black);
+	drawCircle(x + 0.04f, y + 0.39f, 0.015f, black, black);
+	drawCircle(x + 0.04f, y + 0.39f, 0.005f, white, black);
 
 	// nose
-	drawPentagon(x, y, 0.0225f, white, orange);
+	drawPentagon(x, y + 0.35f, 0.0225f, white, orange);
 }
 
 void displayText(char *text, float x, float y)
