@@ -509,21 +509,29 @@ void recycleSnow(Particle_t *snow)
 
 void moveSnowmanUp()
 {
+	if (snowmanPosition.y > groundPosition.y) return;
+
 	snowmanPosition.y += 0.01f;
 }
 
 void moveSnowmanDown()
 {
+	if (snowmanPosition.y < -1) return;
+
 	snowmanPosition.y -= 0.01f;
 }
 
 void moveSnowmanLeft()
 {
+	if (snowmanPosition.x < -1) return;
+
 	snowmanPosition.x -= 0.05f;
 }
 
 void moveSnowmanRight()
 {
+	if (snowmanPosition.x > 1) return;
+
 	snowmanPosition.x += 0.05f;
 }
 
