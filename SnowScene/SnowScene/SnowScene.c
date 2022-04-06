@@ -7,25 +7,13 @@
 /******************************************************************************
 * Animation & Timing Setup
 ******************************************************************************/
-// Target frame rate (number of Frames Per Second).
 #define TARGET_FPS 60
-// Ideal time each frame should be displayed for (in milliseconds).
 const unsigned int FRAME_TIME = 1000 / TARGET_FPS;
-// Frame time in fractional seconds.
-// Note: This is calculated to accurately reflect the truncated integer value of
-// FRAME_TIME, which is used for timing, rather than the more accurate fractional
-// value we'd get if we simply calculated "FRAME_TIME_SEC = 1.0f / TARGET_FPS".
 const float FRAME_TIME_SEC = (1000 / TARGET_FPS) / 1000.0f;
-// Time we started preparing the current frame (in milliseconds since GLUT was 
-// initialized).
 unsigned int frameStartTime = 0;
 /******************************************************************************
  * Keyboard Input Handling Setup
  ******************************************************************************/
- // Define all character keys used for input (add any new key definitions here).
- // Note: USE ONLY LOWERCASE CHARACTERS HERE. The keyboard handler provided 
- // converts all
- // characters typed by the user to lowercase, so the SHIFT key is ignored.
 #define KEY_EXIT 27 // Escape key.
 
 // Special movement keys
@@ -62,7 +50,6 @@ void think(void);
 
 // Frame counter
 int frameCount = 0;
-
 
 // Structs for systems
 typedef struct {
@@ -132,7 +119,6 @@ float RandomFloat(float min, float max) {
 	return ((max - min) * ((float)rand() / RAND_MAX)) + min;
 }
 
-//const float floorPositionX = RandomFloat(0.7f, 0.9f);
 /******************************************************************************
  * Entry Point (don't put anything except the main function here)
  ******************************************************************************/
@@ -149,20 +135,14 @@ void main(int argc, char **argv)
 	glutCreateWindow("Animation");
 	// Set up the scene.
 	init();
-	// Disable key repeat (keyPressed or specialKeyPressed will only be called 
-	// once when a key is first pressed).
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
-	// Register GLUT callbacks.
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyPressed);
 	glutSpecialUpFunc(keyReleased);
 	glutSpecialFunc(specialKeyPressed);
 	glutIdleFunc(idle);
-	// Record when we started rendering the very first frame (which should happen
-	// after we call glutMainLoop).
 	frameStartTime = (unsigned int)glutGet(GLUT_ELAPSED_TIME);
-	// Enter the main drawing loop (this will never return).
 
 	glutMainLoop();
 }
@@ -334,6 +314,7 @@ void display(void)
 	// Draw snows infront of snowman
 	displaySnow(2);
 
+	// Diagnostics bitmap texts
 	displayText("Diagnostics:", -1.f, 0.95f);
 
 	displayAmountOfActiveParticles();
@@ -443,19 +424,13 @@ void specialKeyPressed(unsigned char key, int x, int y)
 
 void idle(void)
 {
-	// Wait until it's time to render the next frame.
 	unsigned int frameTimeElapsed = (unsigned int)glutGet(GLUT_ELAPSED_TIME) -
 		frameStartTime;
 	if (frameTimeElapsed < FRAME_TIME)
 	{
-		// This frame took less time to render than the ideal FRAME_TIME: we'll
-		// suspend this thread for the remaining time
-		// so we're not taking up the CPU until we need to render another 
-		// frame.
 		unsigned int timeLeft = FRAME_TIME - frameTimeElapsed;
 		Sleep(timeLeft);
 	}
-	// Begin processing the next frame.
 	frameStartTime = glutGet(GLUT_ELAPSED_TIME); // Record when we started work on the new frame.
 	think(); // Update our simulated world before the next call to display().
 	glutPostRedisplay(); // Tell OpenGL there's a new frame ready to be drawn.
