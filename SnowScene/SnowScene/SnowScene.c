@@ -57,11 +57,14 @@ void think(void);
 #define DEG_TO_RAD PI/180.0f
 
 // Particle system length
-#define MAX_PARTICLES 1000
+#define MAX_SNOW_PARTICLES 1000
+#define MAX_STAR_PARTICLES 50
 
 // Frame counter
 int frameCount = 0;
 
+
+// Structs for systems
 typedef struct {
 	float x;
 	float y;
@@ -82,22 +85,41 @@ typedef struct {
 	float transparency;
 } Particle_t;
 
+typedef struct {
+	Vec2f position;
+	GLfloat theta;
+	float velocity;
+	float transparency;
+	float initialScale;
+	float scale;
+	int lineSize;
+	int scaleDirection;
+	int transparencyDirection;
+	int isActive;
+} Particle_S;
+
 
 // Snow system
-Particle_t snowSystem[MAX_PARTICLES];
+Particle_t snowSystem[MAX_SNOW_PARTICLES];
 int currentSnowPosition = 0;
 int activeParticle = 0;
 
+// Star system
+Particle_S starSystem[MAX_STAR_PARTICLES];
+int currentStarPosition = 0;
+
+
+// Position values
 Vec2f snowmanPosition = { 0.f, -1.f };
-Vec2f groundPosition = { 0.8f, -0.6f };
+Vec2f groundPosition; // = { 0.8f, -0.6f };
 
 // Flags
 int isParticlesOn = 0;
 int isWindOn = 0;
 int isShakeOn = 0;
+int isStarOn = 0;
 
 // Keyboard flags
-
 int arrowUpOn = 0;
 int arrowDownOn = 0;
 int arrowLeftOn = 0;
@@ -116,6 +138,9 @@ float RandomFloat(float min, float max) {
  ******************************************************************************/
 void main(int argc, char **argv)
 {
+	// Random number seeding
+	srand(time(0));
+
 	// Initialize the OpenGL window.
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -148,12 +173,12 @@ void displayBackground()
 {
 	glBegin(GL_POLYGON);
 	{
-		glColor4f(1.f, 1.f, 1.f, 0.8f);
+		glColor4f(0.98f, 0.84f, 0.65f, 1.f);
 		glVertex2f(-1, -1);
 		glVertex2f(1, -1);
-		glColor4f(0.2f, 0.6f, 1.f, 1.f);
-		glVertex2f(1, 1);
-		glVertex2f(-1, 1);
+		glColor4f(0.f, 0.f, 0.f, 0.8f);
+		glVertex2f(1, groundPosition.y + 0.4f);
+		glVertex2f(-1, groundPosition.y + 0.4f);
 	}
 	glEnd();
 }
@@ -174,7 +199,7 @@ void displayFloor()
 
 void displaySnow(int position)
 {
-	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
+	for (unsigned int i = 0; i < MAX_SNOW_PARTICLES; i++)
 	{
 		if (snowSystem[i].isActive == position)
 		{
@@ -187,6 +212,33 @@ void displaySnow(int position)
 			glEnd();
 		}
 	}
+}
+
+void drawStarLines(float x, float y, GLfloat theta, float scale, int angle, float lineSize, float transparency)
+{
+	glLineWidth(lineSize);
+	glBegin(GL_LINES);
+	{
+		glColor4f(1, 1, 1, 0);
+		glVertex2f((float)cos(DEG_TO_RAD * (theta + angle)) * scale + x,
+			(float)sin(DEG_TO_RAD * (theta + angle)) * scale + y);
+		glColor4f(1, 1, 1, transparency);
+		glVertex2f(x, y);
+	}
+	glEnd();
+}
+
+void displayStar()
+{
+	for (unsigned int i = 0; i < MAX_STAR_PARTICLES; i++) 
+	{
+		for (int y=0; y < 360; y+=45) {
+			if(starSystem[i].isActive == 1)
+			drawStarLines(starSystem[i].position.x, starSystem[i].position.y, starSystem[i].theta, 
+				starSystem[i].scale, y, starSystem[i].lineSize, starSystem[i].transparency);
+		}
+	}
+
 }
 
 void drawCircle(float x, float y, float radius, Vec3f centerColor, Vec3f outerColor) {
@@ -212,7 +264,6 @@ void drawPentagon(float x, float y, float radius, Vec3f centerColor, Vec3f outer
 	}
 	glEnd();
 }
-
 
 // Draws snowman at the bottom of its sprite
 // x,y will be the bottom edge of snowmans body
@@ -241,7 +292,7 @@ void drawSnowman(float x, float y)
 
 void displayText(char *text, float x, float y)
 {
-	glColor3f(0.2f, 0.2f, 0.2f);
+	glColor3f(1.f, 1.f, 1.f);
 	glRasterPos2f(x, y);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, text);
 }
@@ -254,7 +305,7 @@ void displayAmountOfActiveParticles()
 	strcat(particleString, activeParticleString);
 	strcat(particleString, " of 1000");
 
-	glColor3f(0.2f, 0.2f, 0.2f);
+	glColor3f(1.f, 1.f, 1.f);
 	glRasterPos2f(-0.98f, 0.9f);
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 }
@@ -271,6 +322,9 @@ void display(void)
 	displayBackground();
 	displayFloor();
 
+	// Draw stars
+	displayStar();
+
 	// Draw snows behind snowman
 	displaySnow(1);
 
@@ -286,13 +340,15 @@ void display(void)
 
 	displayText("Scene Controls:", -1.f, 0.85f);
 
-	displayText("s: toggle snow", -0.98f, 0.8f);
+	displayText("a: toggle shake", -0.98f, 0.8f);
 
-	displayText("a: toggle shake", -0.98f, 0.75f);
+	displayText("s: toggle snow", -0.98f, 0.75f);
 
 	displayText("d: toggle wind", -0.98f, 0.7f);
 
-	displayText("q: quit", -0.98f, 0.65f);
+	displayText("e: toggle star", -0.98f, 0.65f);
+
+	displayText("q: quit", -0.98f, 0.60f);
 
 	glutSwapBuffers();
 }
@@ -328,6 +384,14 @@ void keyPressed(unsigned char key, int x, int y)
 		else isShakeOn = 0;
 		break;
 
+	case 'e':
+		if (isStarOn == 0) {
+			isStarOn = 1;
+			currentStarPosition = 0;
+		}
+		else isStarOn = 0;
+		break;
+
 	case 'q':
 		exit(0);
 		break;
@@ -338,6 +402,7 @@ void keyPressed(unsigned char key, int x, int y)
 	}
 }
 
+// Arrow keys for moving snowman
 void keyReleased(unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -356,6 +421,7 @@ void keyReleased(unsigned char key, int x, int y)
 	}
 }
 
+// Arrow keys for moving snowman
 void specialKeyPressed(unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -418,6 +484,24 @@ void initialiseSnow(Particle_t *snow)
 	snow->transparency = RandomFloat(0.2f, 1.f);
 }
 
+void initialiseStar(Particle_S * star)
+{
+	for (unsigned int i = 0; i < MAX_STAR_PARTICLES; i++)
+	{
+		star->isActive = 0;
+		star->position.x = RandomFloat(-0.9f, 0.9f);
+		star->position.y = RandomFloat(0.f, 0.9f);
+		star->initialScale = RandomFloat(0.03f, 0.04f);
+		star->scale = star->initialScale;
+		star->theta = 0.0f;
+		star->velocity = star->initialScale * 20;
+		star->transparency = 0.1f;
+		star->lineSize = star->scale * 30;
+		star->scaleDirection = 1;
+		star->transparencyDirection = 1;
+	}
+}
+
 void init(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0); //make the clear color black and opaque
@@ -428,10 +512,18 @@ void init(void)
 	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 
 	// Initialize all particles before rendering the first frame
-	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
+	for (unsigned int i = 0; i < MAX_SNOW_PARTICLES; i++)
 	{
 		initialiseSnow(&snowSystem[i]);
 	}
+
+	for (unsigned int i = 0; i < MAX_STAR_PARTICLES; i++)
+	{
+		initialiseStar(&starSystem[i]);
+	}
+
+	groundPosition.x = RandomFloat(0.6f, 0.9f); //0.8f, -0.6f
+	groundPosition.y = RandomFloat(-0.6f, -0.8f);
 }
 /******************************************************************************
 * Animation functions for think function
@@ -446,7 +538,7 @@ void spawnSnow(int position)
 	int snowSpawnCounter = 0;
 
 	// Activate 0 to 8 particles
-	while (snowSpawnCounter < snowAmount && currentSnowPosition < MAX_PARTICLES) {
+	while (snowSpawnCounter < snowAmount && currentSnowPosition < MAX_SNOW_PARTICLES) {
 		if (snowSystem[currentSnowPosition].isActive == 0)
 		{
 			// Set it to be active behind or infront of snowman
@@ -535,6 +627,74 @@ void moveSnowmanRight()
 	snowmanPosition.x += 0.05f;
 }
 
+void starEffect(Particle_S *star)
+{
+
+	// Set flag for scale
+	if (star->scale > star->initialScale * 1.15f)
+		star->scaleDirection = 1;
+	else if (star->scale < star->initialScale * 0.85f)
+		star->scaleDirection = 2;
+
+	// Set flag for transparency
+	if (star->transparency > 1.f)
+		star->transparencyDirection = 1;
+	else if (star->transparency <= 0.1f)
+		star->transparencyDirection = 2;
+		
+	// when star is on do effect
+	if (star->isActive == 1)
+	{
+		// reset position when transparency is below 0.1
+		if (star->transparency <= 0.1f)
+		{
+			star->position.x = RandomFloat(-0.9f, 0.9f);
+			star->position.y = RandomFloat(0.f, 0.9f);
+
+			// turn off star if off
+			if (isStarOn == 0)
+			{
+				star->isActive = 0;
+			}
+		}
+
+		// rotation
+		star->theta += star->velocity;
+
+		if (star->theta >= 360.0)
+			star->theta -= 360.0;
+
+		// Scale change
+		if (star->scaleDirection == 1)
+		{
+			star->scale /= 1.0025f;
+		}
+		else if (star->scaleDirection == 2)
+		{
+			star->scale *= 1.0025f;
+		}
+
+		// Tranparency change
+		if (star->transparencyDirection == 1)
+		{
+			star->transparency *= 0.975f;
+		}
+		else if (star->transparencyDirection == 2)
+		{
+			star->transparency /= 0.975f;
+		}
+	}
+}
+
+void spawnStar()
+{
+	// return out when at last index of starSystem
+	if (currentStarPosition >= MAX_STAR_PARTICLES) return;
+
+	starSystem[currentStarPosition].isActive = 1;
+	currentStarPosition++;
+}
+
 void think(void)
 {
 	// Snow particle system
@@ -545,8 +705,15 @@ void think(void)
 		spawnSnow(1);
 		spawnSnow(2);
 	}
+	
 
-	for (unsigned int i = 0; i < MAX_PARTICLES; i++)
+	// Spawn each stars with 50 frames delay
+	if (frameCount % 50 == 0 && isStarOn == 1)
+	{
+		spawnStar();
+	}
+
+	for (unsigned int i = 0; i < MAX_SNOW_PARTICLES; i++)
 	{
 		// if snow is activated
 		if (snowSystem[i].isActive == 1 || snowSystem[i].isActive == 2)
@@ -575,6 +742,12 @@ void think(void)
 				recycleSnow(&snowSystem[i]);
 			}
 		}
+	}
+
+	// Spining and breath in and out effect on the star
+	for (unsigned int i = 0; i < MAX_STAR_PARTICLES; i++)
+	{
+		starEffect(&starSystem[i]);
 	}
 
 	// Snowman movement system
