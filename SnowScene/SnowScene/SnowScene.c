@@ -331,6 +331,8 @@ void display(void)
 
 	displayText("q: quit", -0.98f, 0.60f);
 
+	displayText("Arrow keys: Snowman Movement", 0.53f, 0.95f);
+
 	glutSwapBuffers();
 }
 

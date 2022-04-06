@@ -1,13 +1,13 @@
 ﻿  SnowScene.c
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(142): warning C4013: 'time' undefined; assuming extern returning int
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(159): warning C4028: formal parameter 1 different from declaration
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(160): warning C4028: formal parameter 1 different from declaration
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(206): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(238): warning C4244: 'function': conversion from 'int' to 'float', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(251): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(263): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(472): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(499): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(128): warning C4013: 'time' undefined; assuming extern returning int
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(142): warning C4028: formal parameter 1 different from declaration
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(143): warning C4028: formal parameter 1 different from declaration
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(186): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(218): warning C4244: 'function': conversion from 'int' to 'float', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(231): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(243): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(449): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(476): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
   SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
   C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
   1 File(s) copied
