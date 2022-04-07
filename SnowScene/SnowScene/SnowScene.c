@@ -155,28 +155,89 @@ void main(int argc, char **argv)
 /******************************************************************************
  * GLUT Callbacks (don't add any other functions here)
  ******************************************************************************/
-void displayBackground()
+void displaySunset()
 {
 	glBegin(GL_POLYGON);
 	{
-		glColor4f(0.98f, 0.84f, 0.65f, 1.f);
-		glVertex2f(-1, -1);
-		glVertex2f(1, -1);
-		glColor4f(0.f, 0.f, 0.f, 0.8f);
-		glVertex2f(1, groundPosition.y + 0.4f);
-		glVertex2f(-1, groundPosition.y + 0.4f);
+		glColor4f(0.96f, 0.62f, 0.76f, 1.f);
+		glVertex2f(-1, -0.6f);
+		glVertex2f(1, -0.6f);
+		glColor4f(0.f, 0.f, 0.f, 1.f);
+		glVertex2f(1, -0.1f);
+		glVertex2f(-1, 0.2f);
 	}
 	glEnd();
 }
+
+void displayTree(float x, float y, float scale)
+{
+	glBegin(GL_TRIANGLES);
+	{
+		glVertex2f(x - 0.03 * scale, y);
+		glVertex2f(x, y + 0.14f * scale);
+		glVertex2f(x + 0.03 * scale, y);
+	}
+	glEnd();
+}
+
+void displayBackground()
+{
+	glBegin(GL_TRIANGLES);
+	{
+		glColor3f(0.09f, 0.05f, 0.24f);
+		glVertex2f(-1.5f, -1.f);
+		glVertex2f(-0.3f, -0.2f);
+		glVertex2f(0.6f, -0.6f);
+
+		glColor3f(0.09f, 0.05f, 0.29f);
+		glVertex2f(1.5f, -1.f);
+		glVertex2f(0.2f, -0.2f);
+		glVertex2f(-0.8f, -0.6f);
+
+		glColor3f(0.07f, 0.04f, 0.26f);
+		glVertex2f(-1.5f, -0.7f);
+		glVertex2f(-0.8f, -0.25f);
+		glVertex2f(0.5f, -1.f);
+
+		glVertex2f(1.5f, -1.f);
+		glVertex2f(0.8f, -0.35f);
+		glVertex2f(0.2f, -0.8f);
+	}
+	glEnd();
+		
+	displayTree(0.9f, -0.47f, 0.7f);
+	displayTree(0.55f, -0.55f, 0.6f);
+	displayTree(0.45f, -0.62f, 0.5f);
+
+	glColor3f(0.02f, 0.f, 0.19f);
+	// closest mountain
+	glBegin(GL_TRIANGLES);
+	{
+		glVertex2f(-1.5f, -1.f);
+		glVertex2f(-0.4f, -0.25f);
+		glVertex2f(1.f, -1.f);
+	}
+	glEnd();
+		
+	// closest trees
+	displayTree(-0.85f, -0.6f, 1.f);
+	displayTree(-0.78f, -0.55f, 0.8f);
+	displayTree(-0.55f, -0.38f, 0.6f);
+	displayTree(-0.2f, -0.38f, 0.8f);
+	displayTree(0.f, -0.5f, 0.7f);
+	displayTree(0.2f, -0.6f, 1.f);
+	
+}
+
 
 void displayFloor()
 {
 	glBegin(GL_POLYGON);
 	{
-		glColor3f(0.5f, 0.5f, 0.5f);
+		glColor3f(0.f, 0.f, 0.f);
 		glVertex2f(groundPosition.x, groundPosition.y);
 		glVertex2f(-groundPosition.x, groundPosition.y);
-		glColor3f(0.9f, 0.9f, 0.9f);
+		glColor3f(0.09f, 0.05f, 0.24f);
 		glVertex2f(-1.5, -1.f);
 		glVertex2f(1.5, -1.f);
 	}
@@ -280,7 +341,7 @@ void displayText(char *text, float x, float y)
 {
 	glColor3f(1.f, 1.f, 1.f);
 	glRasterPos2f(x, y);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_12, text);
+	glutBitmapString(GLUT_BITMAP_8_BY_13, text);
 }
 
 void displayAmountOfActiveParticles()
@@ -292,14 +353,15 @@ void displayAmountOfActiveParticles()
 	strcat(particleString, " of 1000");
 
 	glColor3f(1.f, 1.f, 1.f);
-	glRasterPos2f(-0.98f, 0.9f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
+	glRasterPos2f(-0.98f, 0.85f);
+	glutBitmapString(GLUT_BITMAP_8_BY_13, particleString);
 }
 
 void drawCrescentMoon(float x, float y, float step, float scale, float fullness) {
 
 	glColor3f(0.99f, 0.98f, 0.84f);
-	glBegin(GL_TRIANGLE_STRIP);
+	glLineWidth(2);
+	glBegin(GL_LINE_STRIP);
 	{
 		glVertex2f(x, scale + y);
 		float angle = step;
@@ -324,6 +386,7 @@ void display(void)
 	frameCount++;
 
 	// Scene display
+	displaySunset();
 	displayBackground();
 	displayFloor();
 
@@ -342,23 +405,23 @@ void display(void)
 	displaySnow(2);
 
 	// Diagnostics bitmap texts
-	displayText("Diagnostics:", -1.f, 0.95f);
+	displayText("Arrow keys: Snowman Movement", -1.f, 0.95f);
+
+	displayText("Diagnostics:", -1.f, 0.9f);
 
 	displayAmountOfActiveParticles();
 
-	displayText("Scene Controls:", -1.f, 0.85f);
+	displayText("Scene Controls:", -1.f, 0.8f);
 
-	displayText("a: toggle shake", -0.98f, 0.8f);
+	displayText("a: toggle shake", -0.98f, 0.75f);
 
-	displayText("s: toggle snow", -0.98f, 0.75f);
+	displayText("s: toggle snow", -0.98f, 0.7f);
 
-	displayText("d: toggle wind", -0.98f, 0.7f);
+	displayText("d: toggle wind", -0.98f, 0.65f);
 
-	displayText("e: toggle star", -0.98f, 0.65f);
+	displayText("e: toggle star", -0.98f, 0.6f);
 
-	displayText("q: quit", -0.98f, 0.60f);
-
-	displayText("Arrow keys: Snowman Movement", 0.53f, 0.95f);
+	displayText("q: quit", -0.98f, 0.55f);
 
 	glutSwapBuffers();
 }
@@ -549,8 +612,8 @@ void init(void)
 // postion=1 will spawn behind, position=2 will spawn in front of snowman
 void spawnSnow(int position)
 {
-	// random snow amount between 0 and 8 will spawn
-	int snowAmount = (int) RandomFloat(0, 8);
+	// random snow amount between 0 and 3 will spawn
+	int snowAmount = (int) RandomFloat(0, 3);
 
 	int snowSpawnCounter = 0;
 
@@ -618,7 +681,7 @@ void recycleSnow(Particle_t *snow)
 
 void moveSnowmanUp()
 {
-	if (snowman.position.y > groundPosition.y - (1 - snowman.scale)) return;
+	if (snowman.position.y > groundPosition.y - (1 - snowman.scale) - 0.005f) return;
 
 	snowman.scale *= 0.98f;
 	snowman.position.y += 0.01f;
