@@ -85,6 +85,11 @@ typedef struct {
 	int isActive;
 } Particle_S;
 
+typedef struct {
+	Vec2f position;
+	float scale;
+} Snowman;
+
 
 // Snow system
 Particle_t snowSystem[MAX_SNOW_PARTICLES];
@@ -97,7 +102,8 @@ int currentStarPosition = 0;
 
 
 // Position values
-Vec2f snowmanPosition = { 0.f, -1.f };
+Snowman snowman;
+// Vec2f snowmanPosition; // { 0.f, -1.f };
 Vec2f groundPosition; // = { 0.8f, -0.6f };
 
 // Flags
@@ -255,19 +261,19 @@ void drawSnowman(float x, float y)
 	Vec3f orange = { 0.8f, 0.502f, 0.f };
 
 	// body
-	drawCircle(x, y + 0.15f, 0.15f, white, lightBlue);
-	drawCircle(x, y + 0.35f, 0.125f, white, lightBlue);
+	drawCircle(x, (y + 0.15f) * snowman.scale, snowman.scale * 0.15f, white, lightBlue);
+	drawCircle(x, (y + 0.35f) * snowman.scale, snowman.scale * 0.125f, white, lightBlue);
 
 	// left eye
-	drawCircle(x - 0.04f, y + 0.39f, 0.015f, black, black);
-	drawCircle(x - 0.04f, y + 0.39f, 0.005f, white, black);
+	drawCircle(x - 0.04f * snowman.scale, (y + 0.39f) * snowman.scale, snowman.scale * 0.015f, black, black);
+	drawCircle(x - 0.04f * snowman.scale, (y + 0.39f) * snowman.scale, snowman.scale * 0.005f, white, black);
 
 	// right eye
-	drawCircle(x + 0.04f, y + 0.39f, 0.015f, black, black);
-	drawCircle(x + 0.04f, y + 0.39f, 0.005f, white, black);
+	drawCircle(x + 0.04f * snowman.scale, (y + 0.39f) * snowman.scale, snowman.scale * 0.015f, black, black);
+	drawCircle(x + 0.04f * snowman.scale, (y + 0.39f) * snowman.scale, snowman.scale * 0.005f, white, black);
 
 	// nose
-	drawPentagon(x, y + 0.35f, 0.0225f, white, orange);
+	drawPentagon(x, (y + 0.35f) * snowman.scale, snowman.scale * 0.0225f, white, orange);
 }
 
 void displayText(char *text, float x, float y)
@@ -290,6 +296,25 @@ void displayAmountOfActiveParticles()
 	glutBitmapString(GLUT_BITMAP_HELVETICA_12, particleString);
 }
 
+void drawCrescentMoon(float x, float y, float step, float scale, float fullness) {
+
+	glColor3f(0.99f, 0.98f, 0.84f);
+	glBegin(GL_TRIANGLE_STRIP);
+	{
+		glVertex2f(x, scale + y);
+		float angle = step;
+		while (angle < PI) {
+			float sinAngle = sinf(angle);
+			float cosAngle = cosf(angle);
+			glVertex2f(scale*sinAngle + x, scale*cosAngle + y);
+			glVertex2f(-fullness * scale*sinAngle + x, scale*cosAngle + y);
+			angle += step;
+		}
+		glVertex2f(x, -scale + y);
+	}
+	glEnd();
+}
+
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -305,11 +330,13 @@ void display(void)
 	// Draw stars
 	displayStar();
 
+	drawCrescentMoon(0.75f, 0.7f, 0.1f, 0.15f, -0.45f);
+
 	// Draw snows behind snowman
 	displaySnow(1);
 
 	// Snowman display
-	drawSnowman(snowmanPosition.x, snowmanPosition.y);
+	drawSnowman(snowman.position.x, snowman.position.y);
 
 	// Draw snows infront of snowman
 	displaySnow(2);
@@ -479,6 +506,14 @@ void initialiseStar(Particle_S * star)
 	}
 }
 
+void initialiseSnowman()
+{
+	//{ 0.f, -1.f };
+	snowman.position.x = 0.f;
+	snowman.position.y = -1.f;
+	snowman.scale = 1.f;
+}
+
 void init(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 1.0); //make the clear color black and opaque
@@ -494,13 +529,18 @@ void init(void)
 		initialiseSnow(&snowSystem[i]);
 	}
 
+	// star init
 	for (unsigned int i = 0; i < MAX_STAR_PARTICLES; i++)
 	{
 		initialiseStar(&starSystem[i]);
 	}
 
+	// ground init
 	groundPosition.x = RandomFloat(0.6f, 0.9f); //0.8f, -0.6f
 	groundPosition.y = RandomFloat(-0.6f, -0.8f);
+
+	// snowman init
+	initialiseSnowman();
 }
 /******************************************************************************
 * Animation functions for think function
@@ -578,30 +618,32 @@ void recycleSnow(Particle_t *snow)
 
 void moveSnowmanUp()
 {
-	if (snowmanPosition.y > groundPosition.y) return;
+	if (snowman.position.y > groundPosition.y - (1 - snowman.scale)) return;
 
-	snowmanPosition.y += 0.01f;
+	snowman.scale *= 0.98f;
+	snowman.position.y += 0.01f;
 }
 
 void moveSnowmanDown()
 {
-	if (snowmanPosition.y < -1) return;
+	if (snowman.position.y < -1) return;
 
-	snowmanPosition.y -= 0.01f;
+	snowman.scale /= 0.98f;
+	snowman.position.y -= 0.01f;
 }
 
 void moveSnowmanLeft()
 {
-	if (snowmanPosition.x < -1) return;
+	if (snowman.position.x < -1 || snowman.position.x < -groundPosition.x + 0.1f) return;
 
-	snowmanPosition.x -= 0.05f;
+	snowman.position.x -= 0.05f;
 }
 
 void moveSnowmanRight()
 {
-	if (snowmanPosition.x > 1) return;
+	if (snowman.position.x > 1 || snowman.position.x > groundPosition.x - 0.1f) return;
 
-	snowmanPosition.x += 0.05f;
+	snowman.position.x += 0.05f;
 }
 
 void starEffect(Particle_S *star)

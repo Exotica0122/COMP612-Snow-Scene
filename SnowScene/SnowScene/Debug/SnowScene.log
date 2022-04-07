@@ -1,3 +1,13 @@
-﻿  SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
+﻿  SnowScene.c
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(134): warning C4013: 'time' undefined; assuming extern returning int
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(148): warning C4028: formal parameter 1 different from declaration
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(149): warning C4028: formal parameter 1 different from declaration
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(192): warning C4244: 'function': conversion from 'int' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(224): warning C4244: 'function': conversion from 'int' to 'float', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(237): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(249): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(476): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\anpet\desktop\peter's stuff\aut\comp612\comp612-snow-scene\snowscene\snowscene\snowscene.c(503): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+  SnowScene.vcxproj -> C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\Debug\SnowScene.exe
   C:\Users\anpet\Desktop\Peter's stuff\AUT\COMP612\COMP612-Snow-Scene\SnowScene\SnowScene\freeglut\bin\freeglut.dll
   1 File(s) copied
