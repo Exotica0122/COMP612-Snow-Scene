@@ -86,6 +86,15 @@ typedef struct {
 } Particle_S;
 
 typedef struct {
+	Vec2f lightPosition;
+	Vec2f darkPosition;
+	float lineWidth;
+	float velocity;
+	int isActive;
+} Particle_SS;
+
+
+typedef struct {
 	Vec2f position;
 	float scale;
 } Snowman;
@@ -100,10 +109,11 @@ int activeParticle = 0;
 Particle_S starSystem[MAX_STAR_PARTICLES];
 int currentStarPosition = 0;
 
+// Shooting Stars
+Particle_SS shootingStar;
 
 // Position values
 Snowman snowman;
-// Vec2f snowmanPosition; // { 0.f, -1.f };
 Vec2f groundPosition; // = { 0.8f, -0.6f };
 
 // Flags
@@ -162,7 +172,7 @@ void displaySunset()
 		glColor4f(0.96f, 0.62f, 0.76f, 1.f);
 		glVertex2f(-1, -0.6f);
 		glVertex2f(1, -0.6f);
-		glColor4f(0.f, 0.f, 0.f, 1.f);
+		glColor4f(0.f, 0.f, 0.f, 0.5f);
 		glVertex2f(1, -0.1f);
 		glVertex2f(-1, 0.2f);
 	}
@@ -357,10 +367,10 @@ void displayAmountOfActiveParticles()
 	glutBitmapString(GLUT_BITMAP_8_BY_13, particleString);
 }
 
-void drawCrescentMoon(float x, float y, float step, float scale, float fullness) {
+void displayCrescentMoon(float x, float y, float step, float scale, float fullness) {
 
-	glColor3f(0.99f, 0.98f, 0.84f);
-	glLineWidth(2);
+	glColor4f(0.99f, 0.98f, 0.84f, 0.7f);
+	glLineWidth(2.5);
 	glBegin(GL_LINE_STRIP);
 	{
 		glVertex2f(x, scale + y);
@@ -377,6 +387,21 @@ void drawCrescentMoon(float x, float y, float step, float scale, float fullness)
 	glEnd();
 }
 
+void displayShootingStar()
+{
+	if (shootingStar.isActive == 1)
+	{
+		glBegin(GL_LINES);
+		{
+			glColor4f(1, 1, 1, 1);
+			glVertex2f(shootingStar.darkPosition.x, shootingStar.darkPosition.y);
+			glColor4f(1, 1, 1, 0);
+			glVertex2f(shootingStar.lightPosition.x, shootingStar.lightPosition.y);
+		}
+		glEnd();
+	}
+}
+
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -384,16 +409,17 @@ void display(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	frameCount++;
+	
+	// Draw stars
+	displayStar();
+	displayShootingStar();
 
 	// Scene display
 	displaySunset();
 	displayBackground();
 	displayFloor();
 
-	// Draw stars
-	displayStar();
-
-	drawCrescentMoon(0.75f, 0.7f, 0.1f, 0.15f, -0.45f);
+	displayCrescentMoon(0.75f, 0.7f, 0.1f, 0.15f, -0.45f);
 
 	// Draw snows behind snowman
 	displaySnow(1);
@@ -571,10 +597,23 @@ void initialiseStar(Particle_S * star)
 
 void initialiseSnowman()
 {
-	//{ 0.f, -1.f };
 	snowman.position.x = 0.f;
 	snowman.position.y = -1.f;
 	snowman.scale = 1.f;
+}
+
+void initialiseShootingStar()
+{
+	shootingStar.darkPosition.x = RandomFloat(-0.8f, 0.8f);
+	shootingStar.darkPosition.y = 1.f;
+
+	shootingStar.lightPosition.x = shootingStar.darkPosition.x + RandomFloat(0.f, 0.2f);
+	shootingStar.lightPosition.y = shootingStar.darkPosition.y + RandomFloat(0.1f, 0.2f);
+
+	shootingStar.lineWidth = 2.f;
+	shootingStar.velocity = RandomFloat(0.002f, 0.004f);
+
+	shootingStar.isActive = 1;
 }
 
 void init(void)
@@ -601,6 +640,9 @@ void init(void)
 	// ground init
 	groundPosition.x = RandomFloat(0.6f, 0.9f); //0.8f, -0.6f
 	groundPosition.y = RandomFloat(-0.6f, -0.8f);
+
+	// shooting star init
+	initialiseShootingStar();
 
 	// snowman init
 	initialiseSnowman();
@@ -683,7 +725,7 @@ void moveSnowmanUp()
 {
 	if (snowman.position.y > groundPosition.y - (1 - snowman.scale) - 0.005f) return;
 
-	snowman.scale *= 0.98f;
+	snowman.scale *= 0.95f;
 	snowman.position.y += 0.01f;
 }
 
@@ -691,7 +733,7 @@ void moveSnowmanDown()
 {
 	if (snowman.position.y < -1) return;
 
-	snowman.scale /= 0.98f;
+	snowman.scale /= 0.95f;
 	snowman.position.y -= 0.01f;
 }
 
@@ -777,6 +819,41 @@ void spawnStar()
 	currentStarPosition++;
 }
 
+void moveShootingStar()
+{
+	if (shootingStar.isActive == 1)
+	{
+		float m = ((shootingStar.lightPosition.y - shootingStar.darkPosition.y) / (shootingStar.lightPosition.x - shootingStar.darkPosition.x));
+		float c = shootingStar.darkPosition.y - (m * shootingStar.darkPosition.x);
+
+		Vec2f initialDarkPosition = { shootingStar.darkPosition.x, shootingStar.darkPosition.y };
+		Vec2f initialLightPosition = { shootingStar.lightPosition.x, shootingStar.lightPosition.y };
+		 
+		// c = y - mx
+		// y = mx + c
+		// x = (y - c) / m
+		shootingStar.darkPosition.x = ((initialDarkPosition.y - shootingStar.velocity) - c) / m;
+		shootingStar.darkPosition.y = (m * (initialDarkPosition.x - shootingStar.velocity)) + c;
+
+		shootingStar.lightPosition.x = ((initialLightPosition.y - shootingStar.velocity) - c) / m;
+		shootingStar.lightPosition.y = (m * (initialLightPosition.x - shootingStar.velocity)) + c;
+	}
+
+	// if shooting star is out of the window
+	if (shootingStar.lightPosition.x < -1.f || shootingStar.lightPosition.y < -1.f)
+	{
+		shootingStar.darkPosition.x = RandomFloat(-0.8f, 0.8f);
+		shootingStar.darkPosition.y = 1.f;
+
+		shootingStar.lightPosition.x = shootingStar.darkPosition.x + RandomFloat(0.f, 0.2f);
+		shootingStar.lightPosition.y = shootingStar.darkPosition.y + RandomFloat(0.1f, 0.2f);
+
+		shootingStar.velocity = RandomFloat(0.002f, 0.004f);
+
+		shootingStar.isActive = 0;
+	}
+}
+
 void think(void)
 {
 	// Snow particle system
@@ -793,6 +870,13 @@ void think(void)
 	if (frameCount % 50 == 0 && isStarOn == 1)
 	{
 		spawnStar();
+	}
+
+	// Activate shooting star every 500 frames
+	if (frameCount % 500 == 0)
+	{
+		if(shootingStar.isActive == 0)
+		shootingStar.isActive = 1;
 	}
 
 	for (unsigned int i = 0; i < MAX_SNOW_PARTICLES; i++)
@@ -831,6 +915,8 @@ void think(void)
 	{
 		starEffect(&starSystem[i]);
 	}
+
+	moveShootingStar();
 
 	// Snowman movement system
 	if (arrowUpOn == 1) moveSnowmanUp();
