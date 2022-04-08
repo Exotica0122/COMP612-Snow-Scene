@@ -55,8 +55,7 @@ This calculates the movement for all particles and snowman so elements in the sc
 
 **Scene display**
 
-This is where the sunset color, ground, mountains and trees are displayed. sunset color is made with GL_POLYGON.
-
+This is where the sunset color, ground, mountains and trees are displayed. sunset color is made with GL_POLYGON.  
 `
 void displaySunset()
 {
@@ -71,17 +70,13 @@ void displaySunset()
 	}
 	glEnd();
 }
-`
-  
+`  
 Using by-vertex, The colors will interpolate to make a sunset look.
-  
 Ground is spawned randomly everytime when reloading the scene. Uses GL_POLYGON too to make a trapezoid shape. Same logic as above.
-  
 The moon is made using GL_LINE_STRIP. Two different angles are used to give a cresent moon look.
-  
-Used a reference from stackoverflow. Altered the code so it can change scale and be moved around.
-  
-https://stackoverflow.com/questions/7260963/drawing-a-crescent-shape-in-opengl.
+Used a reference from stackoverflow. Altered the code so it can change scale and be moved around.  
+
+https://stackoverflow.com/questions/7260963/drawing-a-crescent-shape-in-opengl.  
 
 
 **Drawing the Snowman**
