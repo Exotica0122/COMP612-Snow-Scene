@@ -53,7 +53,7 @@ This calculates the movement for all particles and snowman so elements in the sc
 - Shooting Star Particle System
 
 
-**Scene display**
+### Scene display
 
 
 This is where the sunset color, ground, mountains and trees are displayed. sunset color is made with GL_POLYGON.  
@@ -80,7 +80,7 @@ Used a reference from stackoverflow. Altered the code so it can change scale and
 https://stackoverflow.com/questions/7260963/drawing-a-crescent-shape-in-opengl.  
 
 
-**Drawing the Snowman**
+### Drawing the Snowman
 
 
 Most of the logic for drawing the snowman required to draw a circle. Here is the functionality for drawing a circle.
@@ -104,7 +104,7 @@ This allows to be moved around anywhere and the scale (radius) to be changed.
 Once the circle can be drawn and moved, making the snowman is simple as move the x,y coordinates and the scale.
 
 
-**Snowman movement**
+### Snowman movement
 
 
 This snowman is moved with the arrow keys. This meant I had to enable the special key functions for OpenGL
@@ -120,7 +120,7 @@ Once the prototypes and functions are created a flag for each arrow key was made
 Moving the snowman meant the x,y coordinates needs to change. When moving backwards the scale of the snowman changes so it gives a fake depth feel to the scene.  
 
 
-**Snow Particle System**
+### Snow Particle System
 
 
 This was the main part of the assignment. The snow particles will have random x position but will alway spawn at the top of the window if activated.
@@ -133,7 +133,7 @@ Once reaching below -0.75 in the y, the snow will slowly decrease transparency. 
 
 If the user deactivates the snow system then the snow particle will stop spawning. Only when the snow hits below 0.97 is when the snow will deactivate in the scene.  
 
-**Star Particle System**
+### Star Particle System
 
 This is similar to the snow system execpt the stars have a bounce in and out effect with the scale. Also a breath in and out effect with the opacity.  
 
@@ -148,7 +148,7 @@ Once the opacity of the star is below 0.1 then the star will reset to a differen
 If the star system is off then the star will disappear from the scene once the stars reach below 0.1 opacity.  
 
 
-**Shooting Star Particle System**
+### Shooting Star Particle System
 
 This is basically the same with all particle. Only special functionality is the gradient check to make the shooting star go down in a gradient of its angle.
 Every 500 frames the shooting star is activated in the scene.
